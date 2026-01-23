@@ -18,63 +18,93 @@ import { routesPom } from '@e2e/pom/routes';
 import { randomId } from '@e2e/utils/common';
 import { e2eReq } from '@e2e/utils/req';
 import { test } from '@e2e/utils/test';
-import { uiHasToastMsg } from '@e2e/utils/ui';
+import {
+  uiFillMonacoEditor,
+  uiGetMonacoEditor,
+  uiHasToastMsg,
+} from '@e2e/utils/ui';
+import { uiFillUpstreamRequiredFields } from '@e2e/utils/ui/upstreams';
 import { expect } from '@playwright/test';
 
-import { deleteAllRoutes, postRouteReq } from '@/apis/routes';
-import { API_ROUTES } from '@/config/constant';
+import { deleteAllRoutes } from '@/apis/routes';
 
 const routeNameWithEmptyPlugin = randomId('test-route-empty-plugin');
 const routeUri = '/test-empty-plugin';
 
-let createdRouteId: string;
-
 test.beforeAll(async () => {
     await deleteAllRoutes(e2eReq);
-
-    // Create a route via API with key-auth plugin having empty configuration
-    const response = await postRouteReq(e2eReq, {
-        name: routeNameWithEmptyPlugin,
-        uri: routeUri,
-        plugins: {
-            'key-auth': {},
-        },
-        upstream: {
-            nodes: [{ host: 'httpbin.org', port: 80, weight: 1 }],
-            type: 'roundrobin',
-        },
-    });
-
-    createdRouteId = response.data.value.id;
-});
-
-test.afterAll(async () => {
-    // Cleanup via API
-    if (createdRouteId) {
-        try {
-            await e2eReq.delete(`${API_ROUTES}/${createdRouteId}`);
-        } catch {
-            // Route may already be deleted
-        }
-    }
 });
 
 test('should preserve plugin with empty configuration (key-auth) after edit', async ({
     page,
 }) => {
-    // Navigate to the route detail page
     await routesPom.toIndex(page);
     await routesPom.isIndexPage(page);
 
-    // Click on the route to view details
-    await page
-        .getByRole('row', { name: routeNameWithEmptyPlugin })
-        .getByRole('button', { name: 'View' })
-        .click();
-    await routesPom.isDetailPage(page);
+    await test.step('create route with key-auth plugin having configuration', async () => {
+        await routesPom.getAddRouteBtn(page).click();
+        await routesPom.isAddPage(page);
+
+        // Fill in required fields
+        await page.getByLabel('Name', { exact: true }).first().fill(routeNameWithEmptyPlugin);
+        await page.getByLabel('URI', { exact: true }).fill(routeUri);
+
+        // Select HTTP method
+        await page.getByRole('textbox', { name: 'HTTP Methods' }).click();
+        await page.getByRole('option', { name: 'GET' }).click();
+
+        // Add upstream nodes
+        const upstreamSection = page.getByRole('group', {
+            name: 'Upstream',
+            exact: true,
+        });
+        await uiFillUpstreamRequiredFields(upstreamSection, {
+            nodes: [
+                { host: 'httpbin.org', port: 80, weight: 1 },
+                { host: 'httpbin.org', port: 80, weight: 1 },
+            ],
+            name: 'test-upstream-empty-plugin',
+        });
+
+        // Add key-auth plugin with some configuration first
+        const selectPluginsBtn = page.getByRole('button', {
+            name: 'Select Plugins',
+        });
+        await selectPluginsBtn.click();
+
+        const selectPluginsDialog = page.getByRole('dialog', {
+            name: 'Select Plugins',
+        });
+        const searchInput = selectPluginsDialog.getByPlaceholder('Search');
+        await searchInput.fill('key-auth');
+
+        await selectPluginsDialog
+            .getByTestId('plugin-key-auth')
+            .getByRole('button', { name: 'Add' })
+            .click();
+
+        // Add plugin with initial configuration
+        const addPluginDialog = page.getByRole('dialog', { name: 'Add Plugin' });
+        const pluginEditor = await uiGetMonacoEditor(page, addPluginDialog);
+        await uiFillMonacoEditor(page, pluginEditor, '{"hide_credentials": true}');
+        await addPluginDialog.getByRole('button', { name: 'Add' }).click();
+        await expect(addPluginDialog).toBeHidden();
+
+        // Verify the plugin was added
+        const pluginsSection = page.getByRole('group', { name: 'Plugins' });
+        await expect(pluginsSection.getByTestId('plugin-key-auth')).toBeVisible();
+
+        // Submit the form
+        await routesPom.getAddBtn(page).click();
+        await uiHasToastMsg(page, {
+            hasText: 'Add Route Successfully',
+        });
+    });
 
     await test.step('verify key-auth plugin is visible in detail page', async () => {
-        // Verify the plugin is visible (not removed by empty object cleaner during initial load)
+        await routesPom.isDetailPage(page);
+
+        // Verify the plugin is visible
         await expect(page.getByTestId('plugin-key-auth')).toBeVisible();
 
         // Verify the route name
@@ -82,7 +112,7 @@ test('should preserve plugin with empty configuration (key-auth) after edit', as
         await expect(name).toHaveValue(routeNameWithEmptyPlugin);
     });
 
-    await test.step('edit route and verify key-auth plugin persists after save', async () => {
+    await test.step('edit plugin to have empty configuration and verify it persists', async () => {
         // Click the Edit button in the detail page
         await page.getByRole('button', { name: 'Edit' }).click();
 
@@ -90,12 +120,31 @@ test('should preserve plugin with empty configuration (key-auth) after edit', as
         const nameField = page.getByLabel('Name', { exact: true }).first();
         await expect(nameField).toBeEnabled();
 
-        // Verify the key-auth plugin is still visible in edit mode
-        await expect(page.getByTestId('plugin-key-auth')).toBeVisible();
+        // Verify the key-auth plugin is visible in edit mode
+        const pluginsSection = page.getByRole('group', { name: 'Plugins' });
+        const keyAuthPlugin = pluginsSection.getByTestId('plugin-key-auth');
+        await expect(keyAuthPlugin).toBeVisible();
 
-        // Update the description field (make a change to trigger save)
+        // Click edit on the plugin
+        await keyAuthPlugin.getByRole('button', { name: 'Edit' }).click();
+
+        // Edit plugin to have empty configuration
+        const editPluginDialog = page.getByRole('dialog', { name: 'Edit Plugin' });
+        const pluginEditor = await uiGetMonacoEditor(page, editPluginDialog);
+        
+        // Clear the editor and set empty object
+        await uiFillMonacoEditor(page, pluginEditor, '{}');
+        
+        // Save the plugin
+        await editPluginDialog.getByRole('button', { name: 'Save' }).click();
+        await expect(editPluginDialog).toBeHidden();
+
+        // Verify the plugin is still visible after making config empty
+        await expect(keyAuthPlugin).toBeVisible();
+
+        // Update the description field to trigger a change
         const descriptionField = page.getByLabel('Description').first();
-        await descriptionField.fill('Updated description with key-auth plugin');
+        await descriptionField.fill('Updated description after emptying key-auth config');
 
         // Click the Save button to save changes
         const saveBtn = page.getByRole('button', { name: 'Save' });
