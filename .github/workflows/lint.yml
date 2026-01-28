@@ -35,10 +35,10 @@ jobs:
       - name: Run ESLint and Check Formatting
         run: |
           pnpm lint:fix
-          if [ -n "$(git status --porcelain)" ]; then
+          if [ -n "$(git status --porcelain -uno)" ]; then
             echo "Error: The codebase is not properly formatted or has linting issues that can be auto-fixed."
             echo "Please run 'pnpm lint:fix' locally, commit the changes, and push again."
-            git status --porcelain
+            git status --porcelain -uno
             git diff
             exit 1
           fi
