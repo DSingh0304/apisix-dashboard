@@ -68,11 +68,13 @@ const UpstreamDetailForm = (
     refetch,
   } = useSuspenseQuery(getUpstreamQueryOptions(id));
 
+  const formDefaults = produceToUpstreamForm(upstreamData);
   const form = useForm({
     resolver: zodResolver(FormPartUpstreamSchema),
     shouldUnregister: true,
     mode: 'all',
     disabled: readOnly,
+    defaultValues: formDefaults,
   });
 
   const putUpstream = useMutation({
