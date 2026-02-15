@@ -84,13 +84,15 @@ export const RouteList = (props: RouteListProps) => {
 
   // Fetch all data when client-side filtering is active
   const needsAllData = needsClientSideFiltering(params);
+  const nameFilter = params.name;
   const { data: allData, isLoading: isLoadingAllData } = useQuery({
-    queryKey: ['routes-all', defaultParams],
+    queryKey: ['routes-all', defaultParams, nameFilter],
     queryFn: () =>
       getRouteListReq(req, {
         page: 1,
         page_size: PAGE_SIZE_MAX,
         ...defaultParams,
+        ...(nameFilter ? { name: nameFilter } : {}),
       }),
     enabled: needsAllData,
   });
