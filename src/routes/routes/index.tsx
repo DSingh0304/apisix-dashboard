@@ -99,7 +99,12 @@ export const RouteList = (props: RouteListProps) => {
   };
 
   const handleReset = () => {
+    // Clear existing search params and then re-apply the default status filter
     resetParams();
+    setParams({
+      page: 1,
+      status: 'UnPublished/Published',
+    });
   };
 
   // Apply client-side filtering and pagination
