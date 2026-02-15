@@ -259,13 +259,13 @@ export const RouteList = (props: RouteListProps) => {
         tableAlertRender={
           needsAllData
             ? () => (
-              <span style={{ color: '#faad14' }}>
-                {t('table.searchLimit', {
-                  defaultValue: `Only the first ${PAGE_SIZE_MAX} routes are fetched from the database. Client-side filtering is applied to these records.`,
-                  count: PAGE_SIZE_MAX,
-                })}
-              </span>
-            )
+                <span style={{ color: '#faad14' }}>
+                  {t('table.searchLimit', {
+                    defaultValue: `Only the first ${PAGE_SIZE_MAX} routes are fetched from the database. Client-side filtering is applied to these records.`,
+                    count: PAGE_SIZE_MAX,
+                  })}
+                </span>
+              )
             : undefined
         }
       />
