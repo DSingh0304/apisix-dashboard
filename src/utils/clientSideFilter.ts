@@ -30,14 +30,6 @@ export const filterRoutes = (
   return routes.filter((route) => {
     const routeData = route.value;
 
-    // Filter by name
-    if (filters.name && routeData.name) {
-      const nameMatch = routeData.name
-        .toLowerCase()
-        .includes(filters.name.toLowerCase());
-      if (!nameMatch) return false;
-    }
-
     // Filter by ID
     if (filters.id) {
       const idMatch = String(routeData.id)
