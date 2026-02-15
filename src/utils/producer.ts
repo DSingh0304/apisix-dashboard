@@ -32,7 +32,10 @@ export const deepCleanEmptyKeys = <T extends object>(
 
 export const produceDeepCleanEmptyKeys = (opts: ICleanerOptions = {}) =>
   produce((draft) => {
-    deepCleanEmptyKeys(draft, opts);
+    deepCleanEmptyKeys(draft, {
+      emptyObjectsCleaner: false,
+      ...opts,
+    });
   });
 
 export const rmDoubleUnderscoreKeys = (obj: object) => {
