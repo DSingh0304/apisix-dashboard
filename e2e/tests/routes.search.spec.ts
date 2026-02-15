@@ -18,7 +18,7 @@
 import { routesPom } from '@e2e/pom/routes';
 import { e2eReq } from '@e2e/utils/req';
 import { test } from '@e2e/utils/test';
-import { expect} from '@playwright/test';
+import { expect } from '@playwright/test';
 
 import { deleteAllRoutes, putRouteReq } from '@/apis/routes';
 import { API_ROUTES } from '@/config/constant';
