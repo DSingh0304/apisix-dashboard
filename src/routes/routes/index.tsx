@@ -50,18 +50,6 @@ export type RouteListProps = {
   }) => React.ReactNode;
 };
 
-const RouteDetailButton = ({
-  record,
-}: {
-  record: APISIXType['RespRouteItem'];
-}) => (
-  <ToDetailPageBtn
-    key="detail"
-    to="/routes/detail/$id"
-    params={{ id: record.value.id }}
-  />
-);
-
 const SEARCH_PARAM_KEYS: (keyof SearchFormValues)[] = [
   'name',
   'id',
@@ -272,7 +260,16 @@ function RouteComponent() {
   return (
     <>
       <PageHeader title={t('sources.routes')} />
-      <RouteList routeKey="/routes/" ToDetailBtn={RouteDetailButton} />
+      <RouteList
+        routeKey="/routes/"
+        ToDetailBtn={({ record }) => (
+          <ToDetailPageBtn
+            key="detail"
+            to="/routes/detail/$id"
+            params={{ id: record.value.id }}
+          />
+        )}
+      />
     </>
   );
 }
