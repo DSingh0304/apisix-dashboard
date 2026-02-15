@@ -138,9 +138,49 @@ test.describe('Routes version filter', () => {
       // Verify routes are visible in list
       await expect(page.getByText('route_v1_1')).toBeVisible();
       await expect(page.getByText('route_v2_1')).toBeVisible();
-      
+
       // Verify version filter field exists
-      await expect(page.locator('#version')).toBeAttached();
+      const versionFilter = page.locator('#version');
+      await expect(versionFilter).toBeAttached();
+    });
+
+    await test.step('filter by version v1 and verify only v1 routes are shown', async () => {
+      const versionFilter = page.locator('#version');
+
+      // Apply version:v1 filter
+      await versionFilter.click();
+      await versionFilter.fill('version:v1');
+      await versionFilter.press('Enter');
+
+      // v1 routes should be present
+      await expect(page.getByText('route_v1_1')).toBeVisible();
+      await expect(page.getByText('route_v1_2')).toBeVisible();
+      await expect(page.getByText('route_v1_3')).toBeVisible();
+
+      // v2 routes should not be present in the filtered results
+      await expect(page.getByText(/route_v2_/)).toHaveCount(0);
+    });
+
+    await test.step('filter by version v2 and verify only v2 routes are shown', async () => {
+      // Clear previous filter by reloading the page to reset state
+      await page.reload();
+      await routesPom.isIndexPage(page);
+
+      const versionFilter = page.locator('#version');
+      await expect(versionFilter).toBeAttached();
+
+      // Apply version:v2 filter
+      await versionFilter.click();
+      await versionFilter.fill('version:v2');
+      await versionFilter.press('Enter');
+
+      // v2 routes should be present
+      await expect(page.getByText('route_v2_1')).toBeVisible();
+      await expect(page.getByText('route_v2_2')).toBeVisible();
+      await expect(page.getByText('route_v2_3')).toBeVisible();
+
+      // v1 routes should not be present in the filtered results
+      await expect(page.getByText(/route_v1_/)).toHaveCount(0);
     });
   });
 });
