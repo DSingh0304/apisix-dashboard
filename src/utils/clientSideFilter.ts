@@ -113,8 +113,7 @@ export const needsClientSideFiltering = (
   filters: SearchFormValues
 ): boolean => {
   return Boolean(
-    filters.name ||
-      filters.id ||
+    filters.id ||
       filters.host ||
       filters.path ||
       filters.description ||

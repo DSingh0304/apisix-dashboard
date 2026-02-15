@@ -210,6 +210,7 @@ export const RouteList = (props: RouteListProps) => {
           labelOptions={versionOptions}
           initialValues={mapSearchParams(params)}
         />
+      </div>
       <ProTable
         columns={columns}
         dataSource={filteredData}
