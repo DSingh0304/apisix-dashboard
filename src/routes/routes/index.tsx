@@ -29,7 +29,7 @@ import { DeleteResourceBtn } from '@/components/page/DeleteResourceBtn';
 import PageHeader from '@/components/page/PageHeader';
 import { ToAddPageBtn, ToDetailPageBtn } from '@/components/page/ToAddPageBtn';
 import { AntdConfigProvider } from '@/config/antdConfigProvider';
-import { API_ROUTES, PAGE_SIZE_MAX } from '@/config/constant';
+import { API_ROUTES, PAGE_SIZE_MAX, STATUS_ALL } from '@/config/constant';
 import { queryClient } from '@/config/global';
 import { req } from '@/config/req';
 import type { APISIXType } from '@/types/schema/apisix';
@@ -75,9 +75,10 @@ export const RouteList = (props: RouteListProps) => {
     routeKey,
     defaultParams
   );
-  const { params, resetParams } = useSearchParams(routeKey) as {
+  const { params, resetParams, setParams: setSearchParams } = useSearchParams(routeKey) as {
     params: PageSearchType;
     resetParams: () => void;
+    setParams: (params: Partial<PageSearchType>) => void;
   };
   const { t } = useTranslation();
 
@@ -107,7 +108,7 @@ export const RouteList = (props: RouteListProps) => {
     resetParams();
     setParams({
       page: 1,
-      status: 'UnPublished/Published',
+      status: STATUS_ALL,
     });
   };
 
@@ -136,13 +137,20 @@ export const RouteList = (props: RouteListProps) => {
 
   const actualLoading = needsAllData ? isLoadingAllData : isLoading;
 
-  // Update pagination to use filtered total
+  // Update pagination to use filtered total and prevent unnecessary refetch during client-side pagination
   const customPagination = useMemo(() => {
     return {
       ...pagination,
       total: totalCount,
+      // When client-side filtering is active, only update URL params without triggering refetch
+      // since all data is already loaded
+      onChange: needsAllData
+        ? (page: number, pageSize: number) => {
+            setSearchParams({ page, page_size: pageSize });
+          }
+        : pagination.onChange,
     };
-  }, [pagination, totalCount]);
+  }, [pagination, totalCount, needsAllData, setSearchParams]);
 
   // Extract unique version values from route labels
   const versionOptions = useMemo(() => {
@@ -253,7 +261,7 @@ export const RouteList = (props: RouteListProps) => {
             ? () => (
               <span style={{ color: '#faad14' }}>
                 {t('table.searchLimit', {
-                  defaultValue: `Search only allows searching in the first ${PAGE_SIZE_MAX} records.`,
+                  defaultValue: `Only the first ${PAGE_SIZE_MAX} routes are fetched from the database. Client-side filtering is applied to these records.`,
                   count: PAGE_SIZE_MAX,
                 })}
               </span>

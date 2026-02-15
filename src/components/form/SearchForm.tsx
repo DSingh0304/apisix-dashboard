@@ -18,6 +18,8 @@ import { Button, Col, Form, Input, Row, Select, Space } from 'antd';
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { STATUS_ALL } from '@/config/constant';
+
 export type SearchFormValues = {
   name?: string;
   id?: string;
@@ -61,7 +63,7 @@ export const SearchForm = (props: SearchFormProps) => {
     () => [
       {
         label: t('form.searchForm.status.all'),
-        value: 'UnPublished/Published',
+        value: STATUS_ALL,
       },
       {
         label: t('form.searchForm.status.published'),

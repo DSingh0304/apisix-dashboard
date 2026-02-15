@@ -101,6 +101,12 @@
         "status": "Status"
       },
       "placeholders": {
+        "name": "Name",
+        "id": "ID",
+        "host": "Host",
+        "path": "Path",
+        "description": "Description",
+        "plugin": "Plugin",
         "labels": "Select labels",
         "version": "Select version",
         "status": "Select status"
@@ -388,7 +394,7 @@
     "actions": "Actions",
     "disabled": "Disabled",
     "enabled": "Enabled",
-    "searchLimit": "Search only allows searching in the first {{count}} records."
+    "searchLimit": "Only the first {{count}} routes are fetched from the database. Client-side filtering is applied to these records."
   },
   "upstreams": {
     "singular": "Upstream"

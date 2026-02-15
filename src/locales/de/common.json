@@ -121,7 +121,7 @@
                 "search": "Suchen"
               }
             },
-            "searchLimit": "Die Anzahl der Suchergebnisse ist begrenzt. Bitte verfeinern Sie Ihre Suche.",
+            "searchLimit": "Es werden nur die ersten {{count}} Routen aus der Datenbank abgerufen. Die clientseitige Filterung wird auf diese Datensätze angewendet.",
             "secrets": {
       "aws": {
         "access_key_id": "Access Key ID",

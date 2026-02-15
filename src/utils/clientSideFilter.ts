@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { STATUS_ALL } from '@/config/constant';
 import type { APISIXType } from '@/types/schema/apisix';
 
 import type { SearchFormValues } from '../components/form/SearchForm';
@@ -61,6 +62,7 @@ export const filterRoutes = (
     }
 
     // Filter by description
+    // Note: Routes without a description field are excluded when description filter is active
     if (filters.description && routeData.desc) {
       const descMatch = routeData.desc
         .toLowerCase()
@@ -69,6 +71,7 @@ export const filterRoutes = (
     }
 
     // Filter by plugin: treat the filter text as a substring across all plugin names
+    // Note: Routes without any plugins are excluded when plugin filter is active
     if (filters.plugin && routeData.plugins) {
       const pluginNames = Object.keys(routeData.plugins).join(',').toLowerCase();
       const pluginMatch = pluginNames.includes(filters.plugin.toLowerCase());
@@ -76,6 +79,7 @@ export const filterRoutes = (
     }
 
     // Filter by labels: match provided label key:value tokens against route label pairs
+    // Note: Routes without any labels are excluded when labels filter is active
     if (filters.labels && filters.labels.length > 0) {
       if (!routeData.labels) return false;
       
@@ -97,7 +101,7 @@ export const filterRoutes = (
     }
 
     // Filter by status
-    if (filters.status && filters.status !== 'UnPublished/Published') {
+    if (filters.status && filters.status !== STATUS_ALL) {
       const isPublished = routeData.status === 1;
       if (filters.status === 'Published' && !isPublished) return false;
       if (filters.status === 'UnPublished' && isPublished) return false;
@@ -122,7 +126,7 @@ export const needsClientSideFiltering = (
       filters.plugin ||
       (filters.labels && filters.labels.length > 0) ||
       filters.version ||
-      (filters.status && filters.status !== 'UnPublished/Published')
+      (filters.status && filters.status !== STATUS_ALL)
   );
 };
 
