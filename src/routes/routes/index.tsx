@@ -63,7 +63,11 @@ const SEARCH_PARAM_KEYS: (keyof SearchFormValues)[] = [
 ];
 
 const mapSearchParams = (values: Partial<SearchFormValues>) =>
-  Object.fromEntries(SEARCH_PARAM_KEYS.map((key) => [key, values[key]])) as Partial<SearchFormValues>;
+  Object.fromEntries(
+    SEARCH_PARAM_KEYS
+      .map((key) => [key, values[key]] as const)
+      .filter(([, value]) => value !== undefined)
+  ) as Partial<SearchFormValues>;
 
 export const RouteList = (props: RouteListProps) => {
   const { routeKey, ToDetailBtn, defaultParams } = props;
