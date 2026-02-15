@@ -76,7 +76,9 @@ export const filterRoutes = (
     }
 
     // Filter by labels: match provided label key:value tokens against route label pairs
-    if (filters.labels && filters.labels.length > 0 && routeData.labels) {
+    if (filters.labels && filters.labels.length > 0) {
+      if (!routeData.labels) return false;
+      
       const routeLabels = Object.keys(routeData.labels).map((key) =>
         `${key}:${routeData.labels![key]}`.toLowerCase()
       );
