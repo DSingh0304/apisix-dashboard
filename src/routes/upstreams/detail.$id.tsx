@@ -35,7 +35,10 @@ import { useBoolean } from 'react-use';
 import { getUpstreamReq, putUpstreamReq } from '@/apis/upstreams';
 import { FormSubmitBtn } from '@/components/form/Btn';
 import { FormPartUpstream } from '@/components/form-slice/FormPartUpstream';
-import { FormPartUpstreamSchema } from '@/components/form-slice/FormPartUpstream/schema';
+import {
+  FormPartUpstreamSchema,
+  type FormPartUpstreamType,
+} from '@/components/form-slice/FormPartUpstream/schema';
 import { produceToUpstreamForm } from '@/components/form-slice/FormPartUpstream/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import { FormSectionGeneral } from '@/components/form-slice/FormSectionGeneral';
@@ -68,9 +71,10 @@ const UpstreamDetailForm = (
     refetch,
   } = useSuspenseQuery(getUpstreamQueryOptions(id));
 
-  const formDefaults = produceToUpstreamForm(upstreamData);
-  const form = useForm({
-    resolver: zodResolver(FormPartUpstreamSchema),
+  const formDefaults = produceToUpstreamForm(upstreamData) as FormPartUpstreamType;
+  const form = useForm<FormPartUpstreamType>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(FormPartUpstreamSchema) as any,
     shouldUnregister: true,
     mode: 'all',
     disabled: readOnly,
@@ -103,7 +107,7 @@ const UpstreamDetailForm = (
     <FormTOCBox>
       <FormProvider {...form}>
         <form
-          onSubmit={form.handleSubmit((d) => {
+          onSubmit={form.handleSubmit((d: FormPartUpstreamType) => {
             putUpstream.mutateAsync(pipeProduce()(d));
           })}
         >
