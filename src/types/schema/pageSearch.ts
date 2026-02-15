@@ -35,6 +35,10 @@ export const pageSearchSchema = z
     host: z.string().optional(),
     path: z.string().optional(),
     description: z.string().optional(),
+    plugin: z.string().optional(),
+    labels: z.array(z.string()).optional(),
+    version: z.string().optional(),
+    status: z.string().optional(),
   })
   .passthrough();
 
