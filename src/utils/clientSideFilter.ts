@@ -80,7 +80,8 @@ export const filterRoutes = (
 
     // Filter by plugin: treat the filter text as a substring across all plugin names
     // Note: Routes without any plugins are excluded when plugin filter is active
-    if (filters.plugin && routeData.plugins) {
+    if (filters.plugin) {
+      if (!routeData.plugins) return false;
       const pluginNames = Object.keys(routeData.plugins).join(',').toLowerCase();
       const pluginMatch = pluginNames.includes(filters.plugin.toLowerCase());
       if (!pluginMatch) return false;
