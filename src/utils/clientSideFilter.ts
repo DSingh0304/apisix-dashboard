@@ -103,7 +103,8 @@ export const filterRoutes = (
     }
 
     // Filter by version
-    if (filters.version && routeData.labels?.version) {
+    if (filters.version) {
+      if (!routeData.labels?.version) return false;
       const versionMatch = routeData.labels.version === filters.version;
       if (!versionMatch) return false;
     }
