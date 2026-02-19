@@ -82,7 +82,12 @@ export const RouteList = (props: RouteListProps) => {
   };
   const { t } = useTranslation();
 
-  // Fetch all data when client-side filtering is active
+  // Client-side filtering strategy:
+  // The backend API has limited support for complex filtering (e.g., fuzzy search on description,
+  // plugin content) combined with pagination. Therefore, we use client-side filtering for these fields.
+  // Limitation: We only fetch the first PAGE_SIZE_MAX records. If the total number of records
+  // exceeds this limit, the filter may miss matching records that are not in the first batch.
+  // This limitation is communicated to the user via a warning alert in the table.
   const needsAllData = needsClientSideFiltering(params);
   const nameFilter = params.name;
   const { data: allData, isLoading: isLoadingAllData } = useQuery({
