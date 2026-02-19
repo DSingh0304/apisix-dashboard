@@ -225,7 +225,6 @@ export const RouteList = (props: RouteListProps) => {
           onSearch={handleSearch}
           onReset={handleReset}
           versionOptions={versionOptions}
-          labelOptions={versionOptions}
           initialValues={mapSearchParams(params)}
         />
       </div>
