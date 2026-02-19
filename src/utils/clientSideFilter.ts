@@ -31,6 +31,14 @@ export const filterRoutes = (
   return routes.filter((route) => {
     const routeData = route.value;
 
+    // Filter by name
+    if (filters.name) {
+      const nameMatch = routeData.name
+        ?.toLowerCase()
+        .includes(filters.name.toLowerCase());
+      if (!nameMatch) return false;
+    }
+
     // Filter by ID
     if (filters.id) {
       const idMatch = String(routeData.id)
@@ -82,7 +90,7 @@ export const filterRoutes = (
     // Note: Routes without any labels are excluded when labels filter is active
     if (filters.labels && filters.labels.length > 0) {
       if (!routeData.labels) return false;
-      
+
       const routeLabels = Object.keys(routeData.labels).map((key) =>
         `${key}:${routeData.labels![key]}`.toLowerCase()
       );
@@ -120,13 +128,13 @@ export const needsClientSideFiltering = (
 ): boolean => {
   return Boolean(
     filters.id ||
-      filters.host ||
-      filters.path ||
-      filters.description ||
-      filters.plugin ||
-      (filters.labels && filters.labels.length > 0) ||
-      filters.version ||
-      (filters.status && filters.status !== STATUS_ALL)
+    filters.host ||
+    filters.path ||
+    filters.description ||
+    filters.plugin ||
+    (filters.labels && filters.labels.length > 0) ||
+    filters.version ||
+    (filters.status && filters.status !== STATUS_ALL)
   );
 };
 

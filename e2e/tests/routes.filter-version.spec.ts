@@ -49,7 +49,7 @@ test.describe('Routes version filter', () => {
   });
 
   test('should filter routes by version across all pages', async ({ page }) => {
-    test.slow(); // This test creates multiple routes via UI
+    test.setTimeout(120000); // This test creates multiple routes via UI
 
     await test.step('create routes with different versions via UI', async () => {
       await routesPom.toIndex(page);
@@ -149,8 +149,9 @@ test.describe('Routes version filter', () => {
 
       // Apply version:v1 filter
       await versionFilter.click();
-      await versionFilter.fill('version:v1');
-      await versionFilter.press('Enter');
+      // wait for dropdown animation
+      await expect(page.locator('.ant-select-dropdown')).toBeVisible();
+      await page.locator('.ant-select-dropdown').getByText('v1').click();
 
       // v1 routes should be present
       await expect(page.getByText('route_v1_1')).toBeVisible();
@@ -171,8 +172,9 @@ test.describe('Routes version filter', () => {
 
       // Apply version:v2 filter
       await versionFilter.click();
-      await versionFilter.fill('version:v2');
-      await versionFilter.press('Enter');
+      // wait for dropdown animation
+      await expect(page.locator('.ant-select-dropdown')).toBeVisible();
+      await page.locator('.ant-select-dropdown').getByText('v2').click();
 
       // v2 routes should be present
       await expect(page.getByText('route_v2_1')).toBeVisible();
