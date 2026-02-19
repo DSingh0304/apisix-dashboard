@@ -77,7 +77,7 @@ export const RouteList = (props: RouteListProps) => {
   );
   const { params, resetParams, setParams: setSearchParams } = useSearchParams(routeKey) as {
     params: PageSearchType;
-    resetParams: () => void;
+    resetParams: (defaults?: Partial<PageSearchType>) => void;
     setParams: (params: Partial<PageSearchType>) => void;
   };
   const { t } = useTranslation();
@@ -107,8 +107,7 @@ export const RouteList = (props: RouteListProps) => {
 
   const handleReset = () => {
     // Clear existing search params and then re-apply the default status filter
-    resetParams();
-    setParams({
+    resetParams({
       page: 1,
       status: STATUS_ALL,
     });
@@ -148,8 +147,8 @@ export const RouteList = (props: RouteListProps) => {
       // since all data is already loaded
       onChange: needsAllData
         ? (page: number, pageSize: number) => {
-            setSearchParams({ page, page_size: pageSize });
-          }
+          setSearchParams({ page, page_size: pageSize });
+        }
         : pagination.onChange,
     };
   }, [pagination, totalCount, needsAllData, setSearchParams]);
@@ -261,13 +260,13 @@ export const RouteList = (props: RouteListProps) => {
         tableAlertRender={
           needsAllData
             ? () => (
-                <span style={{ color: '#faad14' }}>
-                  {t('table.searchLimit', {
-                    defaultValue: `Only the first ${PAGE_SIZE_MAX} routes are fetched from the database. Client-side filtering is applied to these records.`,
-                    count: PAGE_SIZE_MAX,
-                  })}
-                </span>
-              )
+              <span style={{ color: '#faad14' }}>
+                {t('table.searchLimit', {
+                  defaultValue: `Only the first ${PAGE_SIZE_MAX} routes are fetched from the database. Client-side filtering is applied to these records.`,
+                  count: PAGE_SIZE_MAX,
+                })}
+              </span>
+            )
             : undefined
         }
       />
