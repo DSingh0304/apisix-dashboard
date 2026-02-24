@@ -71,7 +71,7 @@ const mapSearchParams = (values: Partial<SearchFormValues>) =>
 
 export const RouteList = (props: RouteListProps) => {
   const { routeKey, ToDetailBtn, defaultParams } = props;
-  const { data, isLoading, refetch, pagination, setParams } = useRouteList(
+  const { data, isLoading, refetch, pagination, setParams: setRouteListParams } = useRouteList(
     routeKey,
     defaultParams
   );
@@ -104,7 +104,7 @@ export const RouteList = (props: RouteListProps) => {
 
   const handleSearch = (values: SearchFormValues) => {
     // Send name filter to backend, keep others for client-side filtering
-    setParams({
+    setRouteListParams({
       page: 1,
       ...mapSearchParams(values),
     });
