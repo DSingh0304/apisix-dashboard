@@ -18,171 +18,107 @@
 import { routesPom } from '@e2e/pom/routes';
 import { e2eReq } from '@e2e/utils/req';
 import { test } from '@e2e/utils/test';
-import { uiHasToastMsg } from '@e2e/utils/ui';
-import { uiFillUpstreamRequiredFields } from '@e2e/utils/ui/upstreams';
 import { expect } from '@playwright/test';
 
-import { deleteAllRoutes } from '@/apis/routes';
+import { deleteAllRoutes, putRouteReq } from '@/apis/routes';
 import type { APISIXType } from '@/types/schema/apisix';
 
 /**
- * Test for version filtering across multiple pages.
- * This verifies that client-side filtering works across all routes,
- * not just the current page.
+ * Test for version filtering.
+ * Routes are created via API to guarantee labels are saved correctly,
+ * then we test the UI filter behavior.
  */
 test.describe('Routes version filter', () => {
   test.describe.configure({ mode: 'serial' });
 
-  const nodes: APISIXType['UpstreamNode'][] = [
-    { host: 'test.com', port: 80, weight: 100 },
-    { host: 'test2.com', port: 80, weight: 100 },
-  ];
+  const v1Routes: APISIXType['Route'][] = Array.from({ length: 3 }, (_, i) => ({
+    id: `route_v1_id_${i + 1}`,
+    name: `route_v1_name_${i + 1}`,
+    uri: `/v1/test${i + 1}`,
+    methods: ['GET'],
+    labels: { version: 'v1' },
+    upstream: {
+      nodes: [{ host: 'test.com', port: 80, weight: 100 }],
+    },
+  }));
+
+  const v2Routes: APISIXType['Route'][] = Array.from({ length: 3 }, (_, i) => ({
+    id: `route_v2_id_${i + 1}`,
+    name: `route_v2_name_${i + 1}`,
+    uri: `/v2/test${i + 1}`,
+    methods: ['GET'],
+    labels: { version: 'v2' },
+    upstream: {
+      nodes: [{ host: 'test.com', port: 80, weight: 100 }],
+    },
+  }));
+
+  const allRoutes = [...v1Routes, ...v2Routes];
 
   test.beforeAll(async () => {
-    // Clean up any existing routes
     await deleteAllRoutes(e2eReq);
+    await Promise.all(allRoutes.map((r) => putRouteReq(e2eReq, r)));
   });
 
   test.afterAll(async () => {
-    // Clean up test routes
     await deleteAllRoutes(e2eReq);
   });
 
-  test('should filter routes by version across all pages', async ({ page }) => {
-    test.setTimeout(120000); // This test creates multiple routes via UI
-
-    await test.step('create routes with different versions via UI', async () => {
+  test('should filter routes by version', async ({ page }) => {
+    await test.step('verify all routes are visible and version filter exists', async () => {
       await routesPom.toIndex(page);
       await routesPom.isIndexPage(page);
 
-      // Create 3 routes with version v1
-      for (let i = 1; i <= 3; i++) {
-        await routesPom.getAddRouteBtn(page).click();
-        await routesPom.isAddPage(page);
-
-        await page.getByLabel('Name', { exact: true }).first().fill(`route_v1_${i}`);
-        await page.getByLabel('URI', { exact: true }).fill(`/v1/test${i}`);
-
-        // Select HTTP method
-        await page.getByRole('textbox', { name: 'HTTP Methods' }).click();
-        await page.getByRole('option', { name: 'GET' }).click();
-
-        // Add label for version (in the route section, not upstream)
-        const routeLabelsField = page.getByRole('textbox', { name: 'Labels' }).first();
-        await routeLabelsField.click();
-        await routeLabelsField.fill('version:v1');
-        await routeLabelsField.press('Enter');
-
-        // Add upstream
-        const upstreamSection = page.getByRole('group', {
-          name: 'Upstream',
-          exact: true,
-        });
-        await uiFillUpstreamRequiredFields(upstreamSection, {
-          nodes,
-          name: `upstream_v1_${i}`,
-          desc: 'test',
-        });
-
-        await routesPom.getAddBtn(page).click();
-        await uiHasToastMsg(page, {
-          hasText: 'Add Route Successfully',
-        });
-
-        // Go back to list
-        await routesPom.getRouteNavBtn(page).click();
-        await routesPom.isIndexPage(page);
-      }
-
-      // Create 3 routes with version v2
-      for (let i = 1; i <= 3; i++) {
-        await routesPom.getAddRouteBtn(page).click();
-        await routesPom.isAddPage(page);
-
-        await page.getByLabel('Name', { exact: true }).first().fill(`route_v2_${i}`);
-        await page.getByLabel('URI', { exact: true }).fill(`/v2/test${i}`);
-
-        // Select HTTP method
-        await page.getByRole('textbox', { name: 'HTTP Methods' }).click();
-        await page.getByRole('option', { name: 'GET' }).click();
-
-        // Add label for version (in the route section, not upstream)
-        const routeLabelsField = page.getByRole('textbox', { name: 'Labels' }).first();
-        await routeLabelsField.click();
-        await routeLabelsField.fill('version:v2');
-        await routeLabelsField.press('Enter');
-
-        // Add upstream
-        const upstreamSection = page.getByRole('group', {
-          name: 'Upstream',
-          exact: true,
-        });
-        await uiFillUpstreamRequiredFields(upstreamSection, {
-          nodes,
-          name: `upstream_v2_${i}`,
-          desc: 'test',
-        });
-
-        await routesPom.getAddBtn(page).click();
-        await uiHasToastMsg(page, {
-          hasText: 'Add Route Successfully',
-        });
-
-        // Go back to list
-        await routesPom.getRouteNavBtn(page).click();
-        await routesPom.isIndexPage(page);
-      }
-    });
-
-    await test.step('verify all routes are created with labels', async () => {
-      // Verify routes are visible in list
-      await expect(page.getByText('route_v1_1')).toBeVisible();
-      await expect(page.getByText('route_v2_1')).toBeVisible();
-
-      // Verify version filter field exists
-      const versionFilter = page.locator('#version');
-      await expect(versionFilter).toBeAttached();
+      // Verify some routes are visible
+      await expect(page.getByRole('cell', { name: 'route_v1_name_1' }).first()).toBeVisible();
+      await expect(page.getByRole('cell', { name: 'route_v2_name_1' }).first()).toBeVisible();
     });
 
     await test.step('filter by version v1 and verify only v1 routes are shown', async () => {
-      const versionFilter = page.locator('#version');
+      // Open the Version dropdown, then use keyboard to select v1 (first option)
+      await page.getByRole('combobox', { name: 'Version' }).click();
+      // v1 is the first option (sorted alphabetically), press Enter to select it
+      await page.keyboard.press('Enter');
 
-      // Apply version:v1 filter
-      await versionFilter.click();
-      // wait for dropdown animation
-      await expect(page.locator('.ant-select-dropdown')).toBeVisible();
-      await page.locator('.ant-select-dropdown').getByText('v1').click();
+      // Click the Search button to apply the filter
+      await page.getByRole('button', { name: 'Search' }).click();
 
       // v1 routes should be present
-      await expect(page.getByText('route_v1_1')).toBeVisible();
-      await expect(page.getByText('route_v1_2')).toBeVisible();
-      await expect(page.getByText('route_v1_3')).toBeVisible();
+      for (const r of v1Routes) {
+        await expect(page.getByRole('cell', { name: r.name }).first()).toBeVisible();
+      }
 
       // v2 routes should not be present in the filtered results
-      await expect(page.getByText(/route_v2_/)).toHaveCount(0);
+      for (const r of v2Routes) {
+        await expect(page.getByRole('cell', { name: r.name })).toBeHidden();
+      }
     });
 
     await test.step('filter by version v2 and verify only v2 routes are shown', async () => {
-      // Clear previous filter by reloading the page to reset state
-      await page.reload();
+      // Reload page to get a clean filter state
+      await routesPom.toIndex(page);
       await routesPom.isIndexPage(page);
 
-      const versionFilter = page.locator('#version');
-      await expect(versionFilter).toBeAttached();
+      // Wait for routes to be visible again
+      await expect(page.getByRole('cell', { name: 'route_v1_name_1' }).first()).toBeVisible();
 
-      // Apply version:v2 filter
-      await versionFilter.click();
-      // wait for dropdown animation
-      await expect(page.locator('.ant-select-dropdown')).toBeVisible();
-      await page.locator('.ant-select-dropdown').getByText('v2').click();
+      // Open the Version dropdown, then arrow down to v2 (second option) and select
+      await page.getByRole('combobox', { name: 'Version' }).click();
+      await page.keyboard.press('ArrowDown'); // move to v2
+      await page.keyboard.press('Enter');
+
+      // Click the Search button to apply the filter
+      await page.getByRole('button', { name: 'Search' }).click();
 
       // v2 routes should be present
-      await expect(page.getByText('route_v2_1')).toBeVisible();
-      await expect(page.getByText('route_v2_2')).toBeVisible();
-      await expect(page.getByText('route_v2_3')).toBeVisible();
+      for (const r of v2Routes) {
+        await expect(page.getByRole('cell', { name: r.name }).first()).toBeVisible();
+      }
 
       // v1 routes should not be present in the filtered results
-      await expect(page.getByText(/route_v1_/)).toHaveCount(0);
+      for (const r of v1Routes) {
+        await expect(page.getByRole('cell', { name: r.name })).toBeHidden();
+      }
     });
   });
 });
