@@ -32,74 +32,74 @@ const routeNameWithEmptyPlugin = randomId('test-route-empty-plugin');
 const routeUri = '/test-empty-plugin';
 
 test.beforeAll(async () => {
-    await deleteAllRoutes(e2eReq);
+  await deleteAllRoutes(e2eReq);
 });
 
 test('should preserve plugin with empty configuration (key-auth) after edit', async ({
-    page,
+  page,
 }) => {
-    await routesPom.toIndex(page);
-    await routesPom.isIndexPage(page);
+  await routesPom.toIndex(page);
+  await routesPom.isIndexPage(page);
 
-    await test.step('create route with key-auth plugin having configuration', async () => {
-        await routesPom.getAddRouteBtn(page).click();
-        await routesPom.isAddPage(page);
+  await test.step('create route with key-auth plugin having configuration', async () => {
+    await routesPom.getAddRouteBtn(page).click();
+    await routesPom.isAddPage(page);
 
-        // Fill in required fields
-        await page.getByLabel('Name', { exact: true }).first().fill(routeNameWithEmptyPlugin);
-        await page.getByLabel('URI', { exact: true }).fill(routeUri);
+    // Fill in required fields
+    await page.getByLabel('Name', { exact: true }).first().fill(routeNameWithEmptyPlugin);
+    await page.getByLabel('URI', { exact: true }).fill(routeUri);
 
-        // Select HTTP method
-        await page.getByRole('textbox', { name: 'HTTP Methods' }).click();
-        await page.getByRole('option', { name: 'GET' }).click();
+    // Select HTTP method
+    await page.getByRole('textbox', { name: 'HTTP Methods' }).click();
+    await page.getByRole('option', { name: 'GET' }).click();
 
-        // Add upstream nodes
-        const upstreamSection = page.getByRole('group', {
-            name: 'Upstream',
-            exact: true,
-        });
-        await uiFillUpstreamRequiredFields(upstreamSection, {
-            nodes: [
-                { host: 'httpbin.org', port: 80, weight: 1 },
-                { host: 'httpbin.org', port: 80, weight: 1 },
-            ],
-            name: 'test-upstream-empty-plugin',
-        });
-
-        // Add key-auth plugin with some configuration first
-        const selectPluginsBtn = page.getByRole('button', {
-            name: 'Select Plugins',
-        });
-        await selectPluginsBtn.click();
-
-        const selectPluginsDialog = page.getByRole('dialog', {
-            name: 'Select Plugins',
-        });
-        const searchInput = selectPluginsDialog.getByPlaceholder('Search');
-        await searchInput.fill('key-auth');
-
-        await selectPluginsDialog
-            .getByTestId('plugin-key-auth')
-            .getByRole('button', { name: 'Add' })
-            .click();
-
-        // Add plugin with initial configuration
-        const addPluginDialog = page.getByRole('dialog', { name: 'Add Plugin' });
-        const pluginEditor = await uiGetMonacoEditor(page, addPluginDialog);
-        await uiFillMonacoEditor(page, pluginEditor, '{"hide_credentials": true}');
-        await addPluginDialog.getByRole('button', { name: 'Add' }).click();
-        await expect(addPluginDialog).toBeHidden();
-
-        // Verify the plugin was added
-        const pluginsSection = page.getByRole('group', { name: 'Plugins' });
-        await expect(pluginsSection.getByTestId('plugin-key-auth')).toBeVisible();
-
-        // Submit the form
-        await routesPom.getAddBtn(page).click();
-        await uiHasToastMsg(page, {
-            hasText: 'Add Route Successfully',
-        });
+    // Add upstream nodes
+    const upstreamSection = page.getByRole('group', {
+      name: 'Upstream',
+      exact: true,
     });
+    await uiFillUpstreamRequiredFields(upstreamSection, {
+      nodes: [
+        { host: 'httpbin.org', port: 80, weight: 1 },
+        { host: 'httpbin.org', port: 80, weight: 1 },
+      ],
+      name: 'test-upstream-empty-plugin',
+    });
+
+    // Add key-auth plugin with some configuration first
+    const selectPluginsBtn = page.getByRole('button', {
+      name: 'Select Plugins',
+    });
+    await selectPluginsBtn.click();
+
+    const selectPluginsDialog = page.getByRole('dialog', {
+      name: 'Select Plugins',
+    });
+    const searchInput = selectPluginsDialog.getByPlaceholder('Search');
+    await searchInput.fill('key-auth');
+
+    await selectPluginsDialog
+      .getByTestId('plugin-key-auth')
+      .getByRole('button', { name: 'Add' })
+      .click();
+
+    // Add plugin with initial configuration
+    const addPluginDialog = page.getByRole('dialog', { name: 'Add Plugin' });
+    const pluginEditor = await uiGetMonacoEditor(page, addPluginDialog);
+    await uiFillMonacoEditor(page, pluginEditor, '{"hide_credentials": true}');
+    await addPluginDialog.getByRole('button', { name: 'Add' }).click();
+    await expect(addPluginDialog).toBeHidden();
+
+    // Verify the plugin was added
+    const pluginsSection = page.getByRole('group', { name: 'Plugins' });
+    await expect(pluginsSection.getByTestId('plugin-key-auth')).toBeVisible();
+
+    // Submit the form
+    await routesPom.getAddBtn(page).click();
+    await uiHasToastMsg(page, {
+      hasText: 'Add Route Successfully',
+    });
+  });
 
     await test.step('verify key-auth plugin is visible in detail page', async () => {
         await routesPom.isDetailPage(page);
