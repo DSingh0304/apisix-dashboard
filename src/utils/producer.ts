@@ -106,9 +106,7 @@ export const pipeProduce = (...funcs: ((a: any) => unknown)[]) => {
         ...fs,
         produceRmDoubleUnderscoreKeys,
         produceTime,
-        producePreservePlugins, // Mark empty plugin configs before cleaning
-        produceDeepCleanEmptyKeys(),
-        produceRemovePreserveMarkers // Restore empty plugin configs after cleaning
+        produceDeepCleanEmptyKeys()
       )(draft) as never;
     }) as T;
 };
