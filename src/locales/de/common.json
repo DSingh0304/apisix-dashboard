@@ -121,7 +121,6 @@
         "search": "Suchen"
       }
     },
-    "searchLimit": "Es werden nur die ersten {{count}} Routen aus der Datenbank abgerufen. Die clientseitige Filterung wird auf diese Datensätze angewendet.",
     "secrets": {
       "aws": {
         "access_key_id": "Access Key ID",
@@ -394,7 +393,8 @@
   "table": {
     "actions": "Aktionen",
     "disabled": "Deaktiviert",
-    "enabled": "Aktiviert"
+    "enabled": "Aktiviert",
+    "searchLimit": "Es werden nur die ersten {{count}} Routen aus der Datenbank abgerufen. Die clientseitige Filterung wird auf diese Datensätze angewendet."
   },
   "upstreams": {
     "singular": "Upstream"

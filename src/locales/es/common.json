@@ -88,7 +88,6 @@
       "vars": "Variables"
     },
     "search": "Buscar",
-    "searchLimit": "Solo se recuperan las primeras {{count}} rutas de la base de datos. El filtrado del lado del cliente se aplica a estos registros.",
     "searchForm": {
       "fields": {
         "name": "Nombre",
@@ -394,7 +393,8 @@
   "table": {
     "actions": "Acciones",
     "disabled": "Deshabilitado",
-    "enabled": "Habilitado"
+    "enabled": "Habilitado",
+    "searchLimit": "Solo se recuperan las primeras {{count}} rutas de la base de datos. El filtrado del lado del cliente se aplica a estos registros."
   },
   "upstreams": {
     "singular": "Upstream"
