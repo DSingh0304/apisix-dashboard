@@ -53,45 +53,6 @@ export const produceRmDoubleUnderscoreKeys = produce((draft) => {
   rmDoubleUnderscoreKeys(draft);
 });
 
-// Preserve plugin entries with empty configs before cleaning
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const producePreservePlugins = produce((draft: any) => {
-  if (draft.plugins && typeof draft.plugins === 'object') {
-    // Mark plugin configs to preserve them from being cleaned
-    Object.keys(draft.plugins).forEach((pluginName) => {
-      const config = draft.plugins[pluginName];
-      if (
-        config &&
-        typeof config === 'object' &&
-        !Array.isArray(config) &&
-        Object.keys(config).length === 0
-      ) {
-        // Add a marker that will be removed later
-        draft.plugins[pluginName] = { __preserve: true };
-      }
-    });
-  }
-});
-
-// Remove the preserve markers after cleaning
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const produceRemovePreserveMarkers = produce((draft: any) => {
-  if (draft.plugins && typeof draft.plugins === 'object') {
-    Object.keys(draft.plugins).forEach((pluginName) => {
-      const config = draft.plugins[pluginName];
-      if (
-        config &&
-        typeof config === 'object' &&
-        config.__preserve === true &&
-        Object.keys(config).length === 1
-      ) {
-        // Restore to empty object
-        draft.plugins[pluginName] = {};
-      }
-    });
-  }
-});
-
 /**
  * FIXME: type error
  */
