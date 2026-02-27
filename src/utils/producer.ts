@@ -33,8 +33,8 @@ export const deepCleanEmptyKeys = <T extends object>(
 export const produceDeepCleanEmptyKeys = (opts: ICleanerOptions = {}) =>
   produce((draft) => {
     deepCleanEmptyKeys(draft, {
-      emptyObjectsCleaner: false,
       ...opts,
+      emptyObjectsCleaner: false,
     });
   });
 
