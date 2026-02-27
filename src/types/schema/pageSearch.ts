@@ -29,16 +29,6 @@ export const pageSearchSchema = z
       .optional()
       .default(10)
       .transform((val) => (val ? Number(val) : 10)),
-    name: z.string().optional(),
-    label: z.string().optional(),
-    id: z.string().optional(),
-    host: z.string().optional(),
-    path: z.string().optional(),
-    description: z.string().optional(),
-    plugin: z.string().optional(),
-    labels: z.array(z.string()).optional(),
-    version: z.string().optional(),
-    status: z.string().optional(),
   })
   .passthrough();
 
