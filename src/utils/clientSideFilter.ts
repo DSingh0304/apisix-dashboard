@@ -52,7 +52,11 @@ export const filterRoutes = (
       const host = Array.isArray(routeData.host)
         ? routeData.host.join(',')
         : routeData.host || '';
-      const hostMatch = host.toLowerCase().includes(filters.host.toLowerCase());
+      const hosts = Array.isArray((routeData as any).hosts)
+        ? (routeData as any).hosts.join(',')
+        : '';
+      const combinedHost = `${host} ${hosts}`.toLowerCase();
+      const hostMatch = combinedHost.includes(filters.host.toLowerCase());
       if (!hostMatch) return false;
     }
 
