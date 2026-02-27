@@ -101,64 +101,64 @@ test('should preserve plugin with empty configuration (key-auth) after edit', as
     });
   });
 
-    await test.step('verify key-auth plugin is visible in detail page', async () => {
-        await routesPom.isDetailPage(page);
+  await test.step('verify key-auth plugin is visible in detail page', async () => {
+    await routesPom.isDetailPage(page);
 
-        // Verify the plugin is visible
-        await expect(page.getByTestId('plugin-key-auth')).toBeVisible();
+    // Verify the plugin is visible
+    await expect(page.getByTestId('plugin-key-auth')).toBeVisible();
 
-        // Verify the route name
-        const name = page.getByLabel('Name', { exact: true }).first();
-        await expect(name).toHaveValue(routeNameWithEmptyPlugin);
+    // Verify the route name
+    const name = page.getByLabel('Name', { exact: true }).first();
+    await expect(name).toHaveValue(routeNameWithEmptyPlugin);
+  });
+
+  await test.step('edit plugin to have empty configuration and verify it persists', async () => {
+    // Click the Edit button in the detail page
+    await page.getByRole('button', { name: 'Edit' }).click();
+
+    // Verify we're in edit mode
+    const nameField = page.getByLabel('Name', { exact: true }).first();
+    await expect(nameField).toBeEnabled();
+
+    // Verify the key-auth plugin is visible in edit mode
+    const pluginsSection = page.getByRole('group', { name: 'Plugins' });
+    const keyAuthPlugin = pluginsSection.getByTestId('plugin-key-auth');
+    await expect(keyAuthPlugin).toBeVisible();
+
+    // Click edit on the plugin
+    await keyAuthPlugin.getByRole('button', { name: 'Edit' }).click();
+
+    // Edit plugin to have empty configuration
+    const editPluginDialog = page.getByRole('dialog', { name: 'Edit Plugin' });
+    const pluginEditor = await uiGetMonacoEditor(page, editPluginDialog);
+
+    // Clear the editor and set empty object
+    await uiFillMonacoEditor(page, pluginEditor, '{}');
+
+    // Save the plugin
+    await editPluginDialog.getByRole('button', { name: 'Save' }).click();
+    await expect(editPluginDialog).toBeHidden();
+
+    // Verify the plugin is still visible after making config empty
+    await expect(keyAuthPlugin).toBeVisible();
+
+    // Update the description field to trigger a change
+    const descriptionField = page.getByLabel('Description').first();
+    await descriptionField.fill('Updated description after emptying key-auth config');
+
+    // Click the Save button to save changes
+    const saveBtn = page.getByRole('button', { name: 'Save' });
+    await saveBtn.click();
+
+    // Verify the update was successful
+    await uiHasToastMsg(page, {
+      hasText: 'success',
     });
 
-    await test.step('edit plugin to have empty configuration and verify it persists', async () => {
-        // Click the Edit button in the detail page
-        await page.getByRole('button', { name: 'Edit' }).click();
+    // Verify we're back in detail view mode
+    await routesPom.isDetailPage(page);
 
-        // Verify we're in edit mode
-        const nameField = page.getByLabel('Name', { exact: true }).first();
-        await expect(nameField).toBeEnabled();
-
-        // Verify the key-auth plugin is visible in edit mode
-        const pluginsSection = page.getByRole('group', { name: 'Plugins' });
-        const keyAuthPlugin = pluginsSection.getByTestId('plugin-key-auth');
-        await expect(keyAuthPlugin).toBeVisible();
-
-        // Click edit on the plugin
-        await keyAuthPlugin.getByRole('button', { name: 'Edit' }).click();
-
-        // Edit plugin to have empty configuration
-        const editPluginDialog = page.getByRole('dialog', { name: 'Edit Plugin' });
-        const pluginEditor = await uiGetMonacoEditor(page, editPluginDialog);
-        
-        // Clear the editor and set empty object
-        await uiFillMonacoEditor(page, pluginEditor, '{}');
-        
-        // Save the plugin
-        await editPluginDialog.getByRole('button', { name: 'Save' }).click();
-        await expect(editPluginDialog).toBeHidden();
-
-        // Verify the plugin is still visible after making config empty
-        await expect(keyAuthPlugin).toBeVisible();
-
-        // Update the description field to trigger a change
-        const descriptionField = page.getByLabel('Description').first();
-        await descriptionField.fill('Updated description after emptying key-auth config');
-
-        // Click the Save button to save changes
-        const saveBtn = page.getByRole('button', { name: 'Save' });
-        await saveBtn.click();
-
-        // Verify the update was successful
-        await uiHasToastMsg(page, {
-            hasText: 'success',
-        });
-
-        // Verify we're back in detail view mode
-        await routesPom.isDetailPage(page);
-
-        // Verify the key-auth plugin is STILL visible after save (critical check for the fix)
-        await expect(page.getByTestId('plugin-key-auth')).toBeVisible();
-    });
+    // Verify the key-auth plugin is STILL visible after save (critical check for the fix)
+    await expect(page.getByTestId('plugin-key-auth')).toBeVisible();
+  });
 });
