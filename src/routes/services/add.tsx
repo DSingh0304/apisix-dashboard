@@ -28,6 +28,7 @@ import { ServicePostSchema } from '@/components/form-slice/FormPartService/schem
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import PageHeader from '@/components/page/PageHeader';
 import { req } from '@/config/req';
+import { produceRmEmptyUpstreamFields } from '@/components/form-slice/FormPartUpstream/util';
 import { produceRmUpstreamWhenHas } from '@/utils/form-producer';
 import { pipeProduce } from '@/utils/producer';
 
@@ -39,7 +40,7 @@ const ServiceAddForm = () => {
     mutationFn: (d: ServicePostType) =>
       postServiceReq(
         req,
-        pipeProduce(produceRmUpstreamWhenHas('upstream_id'))(d)
+        d
       ),
     async onSuccess(res) {
       notifications.show({
@@ -62,7 +63,9 @@ const ServiceAddForm = () => {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit((d) => postService.mutateAsync(d))}>
+      <form onSubmit={form.handleSubmit((d) => postService.mutateAsync(
+        pipeProduce(produceRmUpstreamWhenHas('upstream_id'), produceRmEmptyUpstreamFields)(d) as ServicePostType
+      ))}>
         <FormPartService />
         <FormSubmitBtn>{t('form.btn.add')}</FormSubmitBtn>
       </form>

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Group,Skeleton } from '@mantine/core';
+import { Button, Group, Skeleton } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
   queryOptions,
@@ -36,7 +36,10 @@ import { getUpstreamReq, putUpstreamReq } from '@/apis/upstreams';
 import { FormSubmitBtn } from '@/components/form/Btn';
 import { FormPartUpstream } from '@/components/form-slice/FormPartUpstream';
 import { FormPartUpstreamSchema } from '@/components/form-slice/FormPartUpstream/schema';
-import { produceToUpstreamForm } from '@/components/form-slice/FormPartUpstream/util';
+import {
+  produceRmEmptyUpstreamFields,
+  produceToUpstreamForm,
+} from '@/components/form-slice/FormPartUpstream/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import { FormSectionGeneral } from '@/components/form-slice/FormSectionGeneral';
 import { DeleteResourceBtn } from '@/components/page/DeleteResourceBtn';
@@ -102,7 +105,7 @@ const UpstreamDetailForm = (
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit((d) => {
-            putUpstream.mutateAsync(pipeProduce()(d));
+            putUpstream.mutateAsync(pipeProduce(produceRmEmptyUpstreamFields)(d) as APISIXType['Upstream']);
           })}
         >
           <FormSectionGeneral readOnly />

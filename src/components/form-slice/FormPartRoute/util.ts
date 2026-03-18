@@ -16,6 +16,7 @@
  */
 import { produce } from 'immer';
 
+import { produceRmEmptyUpstreamFields } from '@/components/form-slice/FormPartUpstream/util';
 import { produceRmUpstreamWhenHas } from '@/utils/form-producer';
 import { pipeProduce } from '@/utils/producer';
 
@@ -35,5 +36,6 @@ export const produceVarsToAPI = produce((draft: RoutePostType) => {
 
 export const produceRoute = pipeProduce(
   produceRmUpstreamWhenHas('service_id', 'upstream_id'),
+  produceRmEmptyUpstreamFields,
   produceVarsToAPI
 );

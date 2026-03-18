@@ -41,6 +41,7 @@ import { req } from '@/config/req';
 import { APISIX, type APISIXType } from '@/types/schema/apisix';
 import { produceRmUpstreamWhenHas } from '@/utils/form-producer';
 import { pipeProduce } from '@/utils/producer';
+import { produceRmEmptyUpstreamFields } from '@/components/form-slice/FormPartUpstream/util';
 
 type Props = {
   readOnly: boolean;
@@ -73,7 +74,7 @@ const ServiceDetailForm = (props: Props) => {
     mutationFn: (d: APISIXType['Service']) =>
       putServiceReq(
         req,
-        pipeProduce(produceRmUpstreamWhenHas('upstream_id'))(d)
+        pipeProduce(produceRmUpstreamWhenHas('upstream_id'), produceRmEmptyUpstreamFields)(d)
       ),
     async onSuccess() {
       notifications.show({

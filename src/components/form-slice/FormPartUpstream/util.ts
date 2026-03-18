@@ -31,3 +31,19 @@ export const produceToUpstreamForm = (
     d.__checksPassiveEnabled =
       !!upstream.checks?.passive && isNotEmpty(upstream.checks.passive);
   });
+
+const isAllUndefined = (obj: Record<string, any>) =>
+  Object.values(obj).every((v) => v === undefined);
+
+export const produceRmEmptyUpstreamFields = produce((draft: any) => {
+  const target = draft.upstream ? draft.upstream : draft;
+  if (target.timeout && isAllUndefined(target.timeout)) {
+    delete target.timeout;
+  }
+  if (target.keepalive_pool && isAllUndefined(target.keepalive_pool)) {
+    delete target.keepalive_pool;
+  }
+  if (target.tls && isAllUndefined(target.tls)) {
+    delete target.tls;
+  }
+});
