@@ -27,7 +27,7 @@ export type FormItemTagsInputProps<
   T extends FieldValues,
   R
 > = UseControllerProps<T> &
-  TagsInputProps & {
+  Omit<TagsInputProps, 'value' | 'onChange'> & {
     from?: (v: R) => string;
     to?: (v: string) => R;
   };
@@ -54,17 +54,16 @@ export const FormItemTagsInput = <T extends FieldValues, R>(
 
   return (
     <TagsInput
+      {...restField}
+      {...restProps}
       value={tagsInputValue}
       error={fieldState.error?.message}
       onChange={(value) => {
         const val = to ? value.map(to) : value;
         fOnChange(val);
-        restProps?.onChange?.(value);
       }}
       comboboxProps={{ shadow: 'md' }}
       acceptValueOnBlur
-      {...restField}
-      {...restProps}
     />
   );
 };
