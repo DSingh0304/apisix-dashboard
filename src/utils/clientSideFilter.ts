@@ -17,7 +17,17 @@
 import { STATUS_ALL } from '@/config/constant';
 import type { APISIXType } from '@/types/schema/apisix';
 
-import type { SearchFormValues } from '../components/form/SearchForm';
+export interface RouteFilters {
+  name?: string;
+  id?: string;
+  host?: string;
+  path?: string;
+  description?: string;
+  plugin?: string;
+  labels?: string[] | string;
+  version?: string;
+  status?: string;
+}
 
 /**
  * Client-side filtering utility for routes
@@ -26,7 +36,7 @@ import type { SearchFormValues } from '../components/form/SearchForm';
 
 export const filterRoutes = (
   routes: APISIXType['RespRouteItem'][],
-  filters: SearchFormValues
+  filters: RouteFilters
 ): APISIXType['RespRouteItem'][] => {
   return routes.filter((route) => {
     const routeData = route.value;
@@ -52,8 +62,8 @@ export const filterRoutes = (
       const host = Array.isArray(routeData.host)
         ? routeData.host.join(',')
         : routeData.host || '';
-      const hosts = Array.isArray((routeData as unknown as Record<string, string[]>).hosts)
-        ? (routeData as unknown as Record<string, string[]>).hosts.join(',')
+      const hosts = Array.isArray(routeData.hosts)
+        ? routeData.hosts.join(',')
         : '';
       const combinedHost = `${host} ${hosts}`.toLowerCase();
       const hostMatch = combinedHost.includes(filters.host.toLowerCase());
@@ -119,11 +129,11 @@ export const filterRoutes = (
       if (!versionMatch) return false;
     }
 
-    // Filter by status
+    // Filter by status (defaulting to 1 if status is undefined as per APISIX schema)
     if (filters.status && filters.status !== STATUS_ALL) {
-      const isPublished = routeData.status === 1;
-      if (filters.status === 'Published' && !isPublished) return false;
-      if (filters.status === 'UnPublished' && isPublished) return false;
+      const isEnabled = (routeData.status ?? 1) === 1;
+      if (filters.status === 'Enabled' && !isEnabled) return false;
+      if (filters.status === 'Disabled' && isEnabled) return false;
     }
 
     return true;
@@ -135,7 +145,7 @@ export const filterRoutes = (
  * Returns true if any filter parameters are present
  */
 export const needsClientSideFiltering = (
-  filters: SearchFormValues
+  filters: RouteFilters
 ): boolean => {
   return Boolean(
     filters.id ||

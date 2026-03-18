@@ -112,9 +112,9 @@
         "status": "Selecciona estado"
       },
       "status": {
-        "all": "Sin publicar/Publicado",
-        "published": "Publicado",
-        "unpublished": "Sin publicar"
+        "all": "Deshabilitado/Habilitado",
+        "enabled": "Habilitado",
+        "disabled": "Deshabilitado"
       },
       "actions": {
         "reset": "Restablecer",

@@ -40,5 +40,5 @@ export const SKIP_INTERCEPTOR_HEADER = '__dashboard__skipInterceptor';
 export const APPSHELL_HEADER_HEIGHT = 60;
 export const APPSHELL_NAVBAR_WIDTH = 250;
 
-// Status filter value that shows all routes (both published and unpublished)
-export const STATUS_ALL = 'UnPublished/Published';
+// Status filter value that shows all routes (both enabled and disabled)
+export const STATUS_ALL = 'Disabled/Enabled';

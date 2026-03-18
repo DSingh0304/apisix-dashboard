@@ -112,9 +112,9 @@
         "status": "Durum Seç"
       },
       "status": {
-        "all": "Yayınlanmamış/Yayınlanmış",
-        "published": "Yayınlanmış",
-        "unpublished": "Yayınlanmamış"
+        "all": "Pasif/Aktif",
+        "enabled": "Aktif",
+        "disabled": "Pasif"
       },
       "actions": {
         "reset": "Sıfırla",

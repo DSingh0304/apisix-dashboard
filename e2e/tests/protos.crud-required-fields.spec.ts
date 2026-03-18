@@ -74,12 +74,12 @@ test.describe('CRUD proto with required fields only', () => {
         p.value.content?.includes('package test_required')
       );
       expect(createdProto).toBeDefined();
-      expect(createdProto?.value.id).toBeDefined();
-       
-      createdProtoId = createdProto?.value.id || '';
+      expect(createdProto!.value.id).toBeDefined();
+
+      createdProtoId = createdProto!.value.id as string;
 
       // Verify content matches
-      expect(createdProto?.value.content).toBe(protoContent);
+      expect(createdProto!.value.content).toBe(protoContent);
     });
   });
 
@@ -105,7 +105,7 @@ test.describe('CRUD proto with required fields only', () => {
       // Find and click the View button for the created proto
       const row = page.locator('tr').filter({ hasText: createdProtoId });
       await row.getByRole('button', { name: 'View' }).click();
-      
+
       // Verify we're on the detail page
       await protosPom.isDetailPage(page);
 

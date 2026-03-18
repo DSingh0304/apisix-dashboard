@@ -112,9 +112,9 @@
         "status": "Select status"
       },
       "status": {
-        "all": "UnPublished/Published",
-        "published": "Published",
-        "unpublished": "UnPublished"
+        "all": "Disabled/Enabled",
+        "enabled": "Enabled",
+        "disabled": "Disabled"
       },
       "actions": {
         "reset": "Reset",
@@ -364,7 +364,6 @@
   "services": {
     "singular": "Service",
     "empty": "No services found. Click Add Service to create your first one."
-
   },
   "settings": {
     "adminKey": "Admin Key",

@@ -36,14 +36,9 @@ export const pageSearchSchema = z
     version: z.string().optional(),
     labels: z
       .preprocess((val) => {
-        if (val === undefined || val === null) {
-          return undefined;
-        }
-        if (Array.isArray(val)) {
-          return val;
-        }
-        return [val];
-      }, z.array(z.string()).optional())
+        if (Array.isArray(val)) return val;
+        return typeof val === 'string' ? [val] : val;
+      }, z.array(z.string()))
       .optional(),
     status: z.string().optional(),
   })

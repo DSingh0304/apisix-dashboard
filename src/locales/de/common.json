@@ -112,9 +112,9 @@
         "status": "Status auswählen"
       },
       "status": {
-        "all": "Unveröffentlicht/Veröffentlicht",
-        "published": "Veröffentlicht",
-        "unpublished": "Unveröffentlicht"
+        "all": "Deaktiviert/Aktiviert",
+        "enabled": "Aktiviert",
+        "disabled": "Deaktiviert"
       },
       "actions": {
         "reset": "Zurücksetzen",

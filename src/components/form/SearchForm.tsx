@@ -66,12 +66,12 @@ export const SearchForm = (props: SearchFormProps) => {
         value: STATUS_ALL,
       },
       {
-        label: t('form.searchForm.status.published'),
-        value: 'Published',
+        label: t('form.searchForm.status.enabled'),
+        value: 'Enabled',
       },
       {
-        label: t('form.searchForm.status.unpublished'),
-        value: 'UnPublished',
+        label: t('form.searchForm.status.disabled'),
+        value: 'Disabled',
       },
     ],
     [t]
