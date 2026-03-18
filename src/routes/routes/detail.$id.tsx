@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Group } from '@mantine/core';
+import { Button, Group, Skeleton } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import {
@@ -23,7 +23,7 @@ import {
   useNavigate,
   useParams,
 } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useBoolean } from 'react-use';
@@ -149,13 +149,21 @@ export const RouteDetail = (props: RouteDetailProps) => {
           ),
         })}
       />
-      <FormTOCBox>
-        <RouteDetailForm
-          readOnly={readOnly}
-          setReadOnly={setReadOnly}
-          id={id}
-        />
-      </FormTOCBox>
+      <Suspense
+        fallback={
+          <FormTOCBox>
+            <Skeleton height={400} />
+          </FormTOCBox>
+        }
+      >
+        <FormTOCBox>
+          <RouteDetailForm
+            readOnly={readOnly}
+            setReadOnly={setReadOnly}
+            id={id}
+          />
+        </FormTOCBox>
+      </Suspense>
     </>
   );
 };

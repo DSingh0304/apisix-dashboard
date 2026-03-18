@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Group, Skeleton } from '@mantine/core';
+import { Button, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import {
@@ -53,7 +53,7 @@ const ServiceDetailForm = (props: Props) => {
   const { id } = useParams({ from: '/services/detail/$id' });
 
   const serviceQuery = useSuspenseQuery(getServiceQueryOptions(id));
-  const { data: serviceData, isLoading, refetch } = serviceQuery;
+  const { data: serviceData, refetch } = serviceQuery;
 
   const form = useForm({
     resolver: zodResolver(APISIX.Service),
@@ -61,14 +61,12 @@ const ServiceDetailForm = (props: Props) => {
     shouldFocusError: true,
     mode: 'all',
     disabled: readOnly,
-    defaultValues: serviceData?.value,
+    defaultValues: serviceData.value,
   });
 
   useEffect(() => {
-    if (serviceData?.value && !isLoading) {
-      form.reset(serviceData.value);
-    }
-  }, [serviceData, form, isLoading]);
+    form.reset(serviceData.value);
+  }, [serviceData, form]);
 
   const putService = useMutation({
     mutationFn: (d: APISIXType['Service']) =>
@@ -85,10 +83,6 @@ const ServiceDetailForm = (props: Props) => {
       setReadOnly(true);
     },
   });
-
-  if (isLoading) {
-    return <Skeleton height={400} />;
-  }
 
   return (
     <FormProvider {...form}>
