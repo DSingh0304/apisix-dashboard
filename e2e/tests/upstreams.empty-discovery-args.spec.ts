@@ -44,7 +44,7 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-  await deleteAllUpstreams(e2eReq);
+  await e2eReq.delete(`${API_UPSTREAMS}/${upstream.id}`);
 });
 
 test('should preserve empty discovery_args after editing upstream', async ({
