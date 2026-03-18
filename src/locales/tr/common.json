@@ -333,6 +333,11 @@
   },
   "settings": {
     "adminKey": "Admin Key",
+    "theme": {
+      "auto": "Sistem temasi",
+      "dark": "Koyu tema",
+      "light": "Acik tema"
+    },
     "title": "Ayarlar",
     "ui-commit-sha": "UI Commit SHA"
   },

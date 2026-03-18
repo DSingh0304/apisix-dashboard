@@ -14,52 +14,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { SegmentedControl, VisuallyHidden, useMantineColorScheme } from '@mantine/core';
+import { SegmentedControl, useMantineColorScheme,VisuallyHidden } from '@mantine/core';
 import { useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import IconDarkMode from '~icons/material-symbols/dark-mode';
 import IconDesktop from '~icons/material-symbols/desktop-windows';
 import IconLightMode from '~icons/material-symbols/light-mode';
 
 const TRANSITION_DURATION_MS = 200;
+const COLOR_SCHEMES = ['light', 'dark', 'auto'] as const;
+
+type ColorSchemeValue = (typeof COLOR_SCHEMES)[number];
+
+const isColorSchemeValue = (value: string): value is ColorSchemeValue =>
+  (COLOR_SCHEMES as readonly string[]).includes(value);
 
 const iconStyle = { width: 14, height: 14 } as const;
 
-const segmentData = [
-  {
-    value: 'light',
-    label: (
-      <>
-        <VisuallyHidden>Light theme</VisuallyHidden>
-        <IconLightMode style={iconStyle} />
-      </>
-    ),
-  },
-  {
-    value: 'dark',
-    label: (
-      <>
-        <VisuallyHidden>Dark theme</VisuallyHidden>
-        <IconDarkMode style={iconStyle} />
-      </>
-    ),
-  },
-  {
-    value: 'auto',
-    label: (
-      <>
-        <VisuallyHidden>System theme</VisuallyHidden>
-        <IconDesktop style={iconStyle} />
-      </>
-    ),
-  },
-];
-
 export const ThemeToggle = () => {
+  const { t } = useTranslation();
   const { colorScheme, setColorScheme } = useMantineColorScheme({
     keepTransitions: true,
   });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const segmentData = [
+    {
+      value: 'light',
+      label: (
+        <>
+          <VisuallyHidden>{t('settings.theme.light')}</VisuallyHidden>
+          <IconLightMode style={iconStyle} />
+        </>
+      ),
+    },
+    {
+      value: 'dark',
+      label: (
+        <>
+          <VisuallyHidden>{t('settings.theme.dark')}</VisuallyHidden>
+          <IconDarkMode style={iconStyle} />
+        </>
+      ),
+    },
+    {
+      value: 'auto',
+      label: (
+        <>
+          <VisuallyHidden>{t('settings.theme.auto')}</VisuallyHidden>
+          <IconDesktop style={iconStyle} />
+        </>
+      ),
+    },
+  ];
 
   // Clean up pending transition timer on unmount
   useEffect(() => {
@@ -73,13 +81,17 @@ export const ThemeToggle = () => {
 
   const handleChange = useCallback(
     (value: string) => {
+      if (!isColorSchemeValue(value)) {
+        return;
+      }
+
       // Clear any pending transition timer from a previous rapid toggle
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
 
       document.body.classList.add('theme-transitioning');
-      setColorScheme(value as 'light' | 'dark' | 'auto');
+      setColorScheme(value);
 
       timerRef.current = setTimeout(() => {
         document.body.classList.remove('theme-transitioning');
