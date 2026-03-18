@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Group, Skeleton } from '@mantine/core';
+import { Button, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import {
   createFileRoute,
   useNavigate,
@@ -59,15 +59,13 @@ const RouteDetailForm = (props: Props) => {
   const { readOnly, setReadOnly, id } = props;
   const { t } = useTranslation();
 
-  const routeQuery = useQuery(getRouteQueryOptions(id));
-  const { data: routeData, isLoading, refetch } = routeQuery;
+  const routeQuery = useSuspenseQuery(getRouteQueryOptions(id));
+  const { data: routeData, refetch } = routeQuery;
 
   // Compute initial form values from route data
-  const formDefaults = routeData?.value
-    ? produceVarsToForm(
-      produceToUpstreamForm(routeData.value.upstream || {}, routeData.value)
-    )
-    : undefined;
+  const formDefaults = produceVarsToForm(
+    produceToUpstreamForm(routeData.value.upstream || {}, routeData.value)
+  );
 
   const form = useForm({
     resolver: zodResolver(RoutePutSchema),
@@ -79,14 +77,12 @@ const RouteDetailForm = (props: Props) => {
   });
 
   useEffect(() => {
-    if (routeData?.value && !isLoading) {
-      const upstreamProduced = produceToUpstreamForm(
-        routeData.value.upstream || {},
-        routeData.value
-      );
-      form.reset(produceVarsToForm(upstreamProduced));
-    }
-  }, [routeData, form, isLoading]);
+    const upstreamProduced = produceToUpstreamForm(
+      routeData.value.upstream || {},
+      routeData.value
+    );
+    form.reset(produceVarsToForm(upstreamProduced));
+  }, [routeData, form]);
 
   const putRoute = useMutation({
     mutationFn: (d: RoutePutType) =>
@@ -100,10 +96,6 @@ const RouteDetailForm = (props: Props) => {
       setReadOnly(true);
     },
   });
-
-  if (isLoading) {
-    return <Skeleton height={400} />;
-  }
 
   return (
     <FormProvider {...form}>

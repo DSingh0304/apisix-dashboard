@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Group,Skeleton } from '@mantine/core';
+import { Button, Group, Skeleton } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
   queryOptions,
@@ -31,6 +31,7 @@ import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useBoolean } from 'react-use';
+import type { z } from 'zod';
 
 import { getUpstreamReq, putUpstreamReq } from '@/apis/upstreams';
 import { FormSubmitBtn } from '@/components/form/Btn';
@@ -72,9 +73,9 @@ const UpstreamDetailForm = (
   } = useSuspenseQuery(getUpstreamQueryOptions(id));
 
   const formDefaults = produceToUpstreamForm(upstreamData) as FormPartUpstreamType;
-  const form = useForm<FormPartUpstreamType>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(FormPartUpstreamSchema) as any,
+  type FormPartUpstreamInput = z.input<typeof FormPartUpstreamSchema>;
+  const form = useForm<FormPartUpstreamInput, unknown, FormPartUpstreamType>({
+    resolver: zodResolver(FormPartUpstreamSchema),
     shouldUnregister: true,
     mode: 'all',
     disabled: readOnly,
