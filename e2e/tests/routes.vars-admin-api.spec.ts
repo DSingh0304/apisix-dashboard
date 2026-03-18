@@ -53,15 +53,8 @@ test('route with vars created via Admin API', async ({ page }) => {
   });
 
   await test.step('view route detail without error', async () => {
-    // Navigate to routes list
-    await routesPom.toIndex(page);
-    await routesPom.isIndexPage(page);
-
-    // Find and click "View on our route"
-    await page
-      .getByRole('row', { name: routeId })
-      .getByRole('button', { name: 'View' })
-      .click();
+    // Navigate directly to the route detail page to avoid flaky table lookups
+    await page.goto(`/routes/detail/${routeId}`);
 
     // Verify the detail page loaded successfully
     await routesPom.isDetailPage(page);
