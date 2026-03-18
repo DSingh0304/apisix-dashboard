@@ -16,10 +16,17 @@
  */
 
 import { test } from '@e2e/utils/test';
+import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-const themeSegment = (value: string) =>
-  `input[value="${value}"] + label`;
+const themeOptionNameByValue = {
+  auto: 'System theme',
+  dark: 'Dark theme',
+  light: 'Light theme',
+} as const;
+
+const themeOption = (page: Page, value: keyof typeof themeOptionNameByValue) =>
+  page.getByRole('radio', { name: themeOptionNameByValue[value], exact: true });
 
 test.describe('Dark Mode', () => {
   test(
@@ -31,7 +38,7 @@ test.describe('Dark Mode', () => {
       });
 
       await test.step('activate auto mode', async () => {
-        await page.locator(themeSegment('auto')).click();
+        await themeOption(page, 'auto').click();
         await page.reload();
       });
 
@@ -49,7 +56,7 @@ test.describe('Dark Mode', () => {
     { tag: '@dark-mode' },
     async ({ page }) => {
       await test.step('switch to dark mode', async () => {
-        await page.locator(themeSegment('dark')).click();
+        await themeOption(page, 'dark').click();
         await expect(page.locator('html')).toHaveAttribute(
           'data-mantine-color-scheme',
           'dark'
@@ -72,7 +79,7 @@ test.describe('Dark Mode', () => {
       });
 
       await test.step('clean up: restore auto mode', async () => {
-        await page.locator(themeSegment('auto')).click();
+        await themeOption(page, 'auto').click();
       });
     }
   );
@@ -82,7 +89,7 @@ test.describe('Dark Mode', () => {
     { tag: '@dark-mode' },
     async ({ page }) => {
       await test.step('switch to light mode', async () => {
-        await page.locator(themeSegment('light')).click();
+        await themeOption(page, 'light').click();
         await expect(page.locator('html')).toHaveAttribute(
           'data-mantine-color-scheme',
           'light'
@@ -90,7 +97,7 @@ test.describe('Dark Mode', () => {
       });
 
       await test.step('switch to dark mode', async () => {
-        await page.locator(themeSegment('dark')).click();
+        await themeOption(page, 'dark').click();
         await expect(page.locator('html')).toHaveAttribute(
           'data-mantine-color-scheme',
           'dark'
@@ -98,7 +105,7 @@ test.describe('Dark Mode', () => {
       });
 
       await test.step('switch back to auto mode', async () => {
-        await page.locator(themeSegment('auto')).click();
+        await themeOption(page, 'auto').click();
       });
 
       await test.step('verify auto mode resolves correctly', async () => {
