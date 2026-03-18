@@ -24,7 +24,7 @@ import { expect } from '@playwright/test';
 import { deleteAllUpstreams } from '@/apis/upstreams';
 
 test.beforeAll(async () => {
-    await deleteAllUpstreams(e2eReq);
+  await deleteAllUpstreams(e2eReq);
 });
 
 /**
@@ -33,63 +33,63 @@ test.beforeAll(async () => {
  * @see https://github.com/apache/apisix-dashboard/issues/3294
  */
 test('should preserve pass_host value when editing upstream nodes', async ({
-    page,
+  page,
 }) => {
-    const upstreamName = randomId('test-pass-host');
+  const upstreamName = randomId('test-pass-host');
 
-    // Navigate to upstream add page
-    await upstreamsPom.toIndex(page);
-    await upstreamsPom.isIndexPage(page);
-    await upstreamsPom.getAddUpstreamBtn(page).click();
-    await upstreamsPom.isAddPage(page);
+  // Navigate to upstream add page
+  await upstreamsPom.toIndex(page);
+  await upstreamsPom.isIndexPage(page);
+  await upstreamsPom.getAddUpstreamBtn(page).click();
+  await upstreamsPom.isAddPage(page);
 
-    await test.step('create upstream with pass_host=node via UI', async () => {
-        // Fill in the Name field
-        await page.getByLabel('Name', { exact: true }).fill(upstreamName);
+  await test.step('create upstream with pass_host=node via UI', async () => {
+    // Fill in the Name field
+    await page.getByLabel('Name', { exact: true }).fill(upstreamName);
 
-        // Add a node
-        const nodesSection = page.getByRole('group', { name: 'Nodes' });
-        const addNodeBtn = page.getByRole('button', { name: 'Add a Node' });
+    // Add a node
+    const nodesSection = page.getByRole('group', { name: 'Nodes' });
+    const addNodeBtn = page.getByRole('button', { name: 'Add a Node' });
 
-        await addNodeBtn.click();
-        const rows = nodesSection.locator('tr.ant-table-row');
-        const firstRow = rows.first();
-        await expect(firstRow).toBeVisible();
+    await addNodeBtn.click();
+    const rows = nodesSection.locator('tr.ant-table-row');
+    const firstRow = rows.first();
+    await expect(firstRow).toBeVisible();
 
-        const hostInput = firstRow.locator('input').first();
-        await hostInput.click();
-        await hostInput.fill('my-service.my-namespace.svc');
+    const hostInput = firstRow.locator('input').first();
+    await hostInput.click();
+    await hostInput.fill('my-service.my-namespace.svc');
 
-        // Click outside to trigger update
-        await nodesSection.click();
+    // Click outside to trigger update
+    await nodesSection.click();
 
-        // Set pass_host to "node"
-        const passHostSection = page.getByRole('group', { name: 'Pass Host' });
-        await passHostSection.getByRole('textbox', { name: 'Pass Host' }).click();
-        await page.getByRole('option', { name: 'node' }).click();
+    // Set pass_host to "node"
+    const passHostSection = page.getByRole('group', { name: 'Pass Host' });
+    await passHostSection.getByRole('textbox', { name: 'Pass Host' }).click();
+    await page.getByRole('option', { name: 'node' }).click();
 
-        // Submit the form
-        await upstreamsPom.getAddBtn(page).click();
-        await uiHasToastMsg(page, {
-            hasText: 'Add Upstream Successfully',
-        });
+    // Submit the form
+    await upstreamsPom.getAddBtn(page).click();
+    await uiHasToastMsg(page, {
+      hasText: 'Add Upstream Successfully',
     });
+  });
 
-    await test.step('verify auto navigate to detail page', async () => {
-        await upstreamsPom.isDetailPage(page);
+  await test.step('verify auto navigate to detail page', async () => {
+    await upstreamsPom.isDetailPage(page);
+  });
+
+  await test.step('verify initial pass_host value is "node"', async () => {
+    const passHostSection = page.getByRole('group', { name: 'Pass Host' });
+    const passHostField = passHostSection.getByRole('textbox', {
+      name: 'Pass Host',
+      exact: true,
     });
+    await expect(passHostField).toHaveValue('node');
+    await expect(passHostField).toBeDisabled();
+  });
 
-    await test.step('verify initial pass_host value is "node"', async () => {
-        const passHostSection = page.getByRole('group', { name: 'Pass Host' });
-        const passHostField = passHostSection.getByRole('textbox', {
-            name: 'Pass Host',
-            exact: true,
-        });
-        await expect(passHostField).toHaveValue('node');
-        await expect(passHostField).toBeDisabled();
-    });
-
-    await test.step('click edit and add a new node', async () => {
+  await test.step('click edit and add a new node', async () => {
         await page.getByRole('button', { name: 'Edit' }).click();
 
         const nodesSection = page.getByRole('group', { name: 'Nodes' });
