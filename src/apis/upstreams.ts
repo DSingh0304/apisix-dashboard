@@ -40,7 +40,8 @@ export const postUpstreamReq = (
 ) =>
   req.post<APISIXType['Upstream'], APISIXType['RespUpstreamDetail']>(
     API_UPSTREAMS,
-    data
+    JSON.stringify(data),
+    { headers: { 'Content-Type': 'application/json' } }
   );
 
 export const putUpstreamReq = (
@@ -50,7 +51,8 @@ export const putUpstreamReq = (
   const { id, ...rest } = data;
   return req.put<APISIXType['Upstream'], APISIXType['RespUpstreamDetail']>(
     `${API_UPSTREAMS}/${id}`,
-    rest
+    JSON.stringify(rest),
+    { headers: { 'Content-Type': 'application/json' } }
   );
 };
 
