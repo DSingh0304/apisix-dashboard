@@ -335,9 +335,9 @@
   "settings": {
     "adminKey": "Admin Key",
     "theme": {
-      "auto": "Sistem temasi",
+      "auto": "Sistem teması",
       "dark": "Koyu tema",
-      "light": "Acik tema"
+      "light": "Açık tema"
     },
     "title": "Ayarlar",
     "ui-commit-sha": "UI Commit SHA"
