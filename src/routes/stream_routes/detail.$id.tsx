@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Center, Group, Loader } from '@mantine/core';
+import { Button, Group, Skeleton } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import {
@@ -48,7 +48,7 @@ type Props = {
   id: string;
 };
 
-const StreamRouteDetailFormInner = (props: Props) => {
+const StreamRouteDetailForm = (props: Props) => {
   const { readOnly, setReadOnly, id } = props;
   const { t } = useTranslation();
 
@@ -99,19 +99,7 @@ const StreamRouteDetailFormInner = (props: Props) => {
   );
 };
 
-const StreamRouteDetailForm = (props: Props) => {
-  return (
-    <Suspense
-      fallback={
-        <Center style={{ padding: 16 }}>
-          <Loader />
-        </Center>
-      }
-    >
-      <StreamRouteDetailFormInner {...props} />
-    </Suspense>
-  );
-};
+
 
 type StreamRouteDetailProps = Pick<Props, 'id'> & {
   onDeleteSuccess: () => void;
@@ -148,13 +136,21 @@ export const StreamRouteDetail = (props: StreamRouteDetailProps) => {
           ),
         })}
       />
-      <FormTOCBox>
-        <StreamRouteDetailForm
-          readOnly={readOnly}
-          setReadOnly={setReadOnly}
-          id={id}
-        />
-      </FormTOCBox>
+      <Suspense
+        fallback={
+          <FormTOCBox>
+            <Skeleton height={400} />
+          </FormTOCBox>
+        }
+      >
+        <FormTOCBox>
+          <StreamRouteDetailForm
+            readOnly={readOnly}
+            setReadOnly={setReadOnly}
+            id={id}
+          />
+        </FormTOCBox>
+      </Suspense>
     </>
   );
 };
