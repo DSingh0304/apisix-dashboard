@@ -27,7 +27,7 @@ import {
   useNavigate,
   useParams,
 } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useBoolean } from 'react-use';
@@ -68,7 +68,6 @@ const UpstreamDetailForm = (
   const { t } = useTranslation();
   const {
     data: { value: upstreamData },
-    isLoading,
     refetch,
   } = useSuspenseQuery(getUpstreamQueryOptions(id));
 
@@ -95,14 +94,10 @@ const UpstreamDetailForm = (
   });
 
   useEffect(() => {
-    if (upstreamData && !isLoading) {
+    if (upstreamData) {
       form.reset(produceToUpstreamForm(upstreamData));
     }
-  }, [upstreamData, form, isLoading]);
-
-  if (isLoading) {
-    return <Skeleton height={400} />;
-  }
+  }, [upstreamData, form]);
 
   return (
     <FormTOCBox>
@@ -160,11 +155,13 @@ function RouteComponent() {
           ),
         })}
       />
-      <UpstreamDetailForm
-        id={id}
-        readOnly={readOnly}
-        setReadOnly={setReadOnly}
-      />
+      <Suspense fallback={<Skeleton height={400} />}>
+        <UpstreamDetailForm
+          id={id}
+          readOnly={readOnly}
+          setReadOnly={setReadOnly}
+        />
+      </Suspense>
     </>
   );
 }
