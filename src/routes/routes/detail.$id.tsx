@@ -23,7 +23,7 @@ import {
   useNavigate,
   useParams,
 } from '@tanstack/react-router';
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useBoolean } from 'react-use';
@@ -63,8 +63,12 @@ const RouteDetailForm = (props: Props) => {
   const { data: routeData, refetch } = routeQuery;
 
   // Compute initial form values from route data
-  const formDefaults = produceVarsToForm(
-    produceToUpstreamForm(routeData.value.upstream || {}, routeData.value)
+  const formDefaults = useMemo(
+    () =>
+      produceVarsToForm(
+        produceToUpstreamForm(routeData.value.upstream || {}, routeData.value)
+      ),
+    [routeData.value]
   );
 
   const form = useForm({

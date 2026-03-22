@@ -27,7 +27,7 @@ import {
   useNavigate,
   useParams,
 } from '@tanstack/react-router';
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useBoolean } from 'react-use';
@@ -71,7 +71,10 @@ const UpstreamDetailForm = (
     refetch,
   } = useSuspenseQuery(getUpstreamQueryOptions(id));
 
-  const formDefaults = produceToUpstreamForm(upstreamData) as FormPartUpstreamType;
+  const formDefaults = useMemo(
+    () => produceToUpstreamForm(upstreamData) as FormPartUpstreamType,
+    [upstreamData]
+  );
   type FormPartUpstreamInput = z.input<typeof FormPartUpstreamSchema>;
   const form = useForm<FormPartUpstreamInput, unknown, FormPartUpstreamType>({
     resolver: zodResolver(FormPartUpstreamSchema),
