@@ -27,7 +27,7 @@ import {
   useNavigate,
   useParams,
 } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useBoolean } from 'react-use';
@@ -71,6 +71,11 @@ const UpstreamDetailForm = (
     refetch,
   } = useSuspenseQuery(getUpstreamQueryOptions(id));
 
+  const formDefaults = useMemo(
+    () => produceToUpstreamForm(upstreamData),
+    [upstreamData]
+  );
+
   const form = useForm({
     resolver: zodResolver(FormPartUpstreamSchema),
     shouldUnregister: true,
@@ -79,7 +84,11 @@ const UpstreamDetailForm = (
   });
 
   const putUpstream = useMutation({
-    mutationFn: (d: APISIXType['Upstream']) => putUpstreamReq(req, d),
+    mutationFn: (d: APISIXType['Upstream']) =>
+      putUpstreamReq(
+        req,
+        pipeProduce(produceRmEmptyUpstreamFields)(d) as APISIXType['Upstream']
+      ),
     async onSuccess() {
       notifications.show({
         message: t('info.edit.success', { name: t('upstreams.singular') }),
@@ -92,9 +101,9 @@ const UpstreamDetailForm = (
 
   useEffect(() => {
     if (upstreamData && !isLoading) {
-      form.reset(produceToUpstreamForm(upstreamData));
+      form.reset(formDefaults);
     }
-  }, [upstreamData, form, isLoading]);
+  }, [formDefaults, form, isLoading, upstreamData]);
 
   if (isLoading) {
     return <Skeleton height={400} />;
@@ -105,7 +114,7 @@ const UpstreamDetailForm = (
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit((d) => {
-            putUpstream.mutateAsync(pipeProduce(produceRmEmptyUpstreamFields)(d) as APISIXType['Upstream']);
+            putUpstream.mutateAsync(d as APISIXType['Upstream']);
           })}
         >
           <FormSectionGeneral readOnly />

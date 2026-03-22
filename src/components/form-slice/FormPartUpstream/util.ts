@@ -32,18 +32,34 @@ export const produceToUpstreamForm = (
       !!upstream.checks?.passive && isNotEmpty(upstream.checks.passive);
   });
 
-const isAllUndefined = (obj: Record<string, any>) =>
-  Object.values(obj).every((v) => v === undefined);
+const isAllUndefined = (obj: Record<string, unknown>) =>
+  Object.values(obj).every(
+    (v) => v === undefined || v === null || v === '' || Number.isNaN(v)
+  );
 
-export const produceRmEmptyUpstreamFields = produce((draft: any) => {
-  const target = draft.upstream ? draft.upstream : draft;
-  if (target.timeout && isAllUndefined(target.timeout)) {
-    delete target.timeout;
+export const produceRmEmptyUpstreamFields = produce((draft: Record<string, any>) => {
+  if (draft.timeout && isAllUndefined(draft.timeout)) {
+    delete draft.timeout;
   }
-  if (target.keepalive_pool && isAllUndefined(target.keepalive_pool)) {
-    delete target.keepalive_pool;
+  if (draft.keepalive_pool && isAllUndefined(draft.keepalive_pool)) {
+    delete draft.keepalive_pool;
   }
-  if (target.tls && isAllUndefined(target.tls)) {
-    delete target.tls;
+  if (draft.tls && isAllUndefined(draft.tls)) {
+    delete draft.tls;
+  }
+
+  if (draft.upstream) {
+    if (draft.upstream.timeout && isAllUndefined(draft.upstream.timeout)) {
+      delete draft.upstream.timeout;
+    }
+    if (
+      draft.upstream.keepalive_pool &&
+      isAllUndefined(draft.upstream.keepalive_pool)
+    ) {
+      delete draft.upstream.keepalive_pool;
+    }
+    if (draft.upstream.tls && isAllUndefined(draft.upstream.tls)) {
+      delete draft.upstream.tls;
+    }
   }
 });

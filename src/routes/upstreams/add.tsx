@@ -42,7 +42,7 @@ const UpstreamAddForm = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const postUpstream = useMutation({
-    mutationFn: (d: PostUpstreamType) => postUpstreamReq(req, d),
+    mutationFn: (d: PostUpstreamType) => postUpstreamReq(req, pipeProduce(produceRmEmptyUpstreamFields)(d) as PostUpstreamType),
     async onSuccess(data) {
       notifications.show({
         message: t('info.add.success', { name: t('upstreams.singular') }),
@@ -62,13 +62,7 @@ const UpstreamAddForm = () => {
 
   return (
     <FormProvider {...form}>
-      <form
-        onSubmit={form.handleSubmit((d) =>
-          postUpstream.mutateAsync(
-            pipeProduce(produceRmEmptyUpstreamFields)(d) as PostUpstreamType
-          )
-        )}
-      >
+      <form onSubmit={form.handleSubmit((d) => postUpstream.mutateAsync(d as PostUpstreamType))}>
         <FormPartUpstream />
         <FormSubmitBtn>{t('form.btn.add')}</FormSubmitBtn>
       </form>
