@@ -16,16 +16,9 @@
  */
 import { upstreamsPom } from '@e2e/pom/upstreams';
 import { randomId } from '@e2e/utils/common';
-import { e2eReq } from '@e2e/utils/req';
 import { test } from '@e2e/utils/test';
 import { uiHasToastMsg } from '@e2e/utils/ui';
 import { expect } from '@playwright/test';
-
-import { deleteAllUpstreams } from '@/apis/upstreams';
-
-test.beforeAll(async () => {
-  await deleteAllUpstreams(e2eReq);
-});
 
 /**
  * Test for GitHub issue #3294
