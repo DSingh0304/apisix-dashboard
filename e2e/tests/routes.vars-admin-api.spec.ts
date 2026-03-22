@@ -20,6 +20,8 @@ import { e2eReq } from '@e2e/utils/req';
 import { test } from '@e2e/utils/test';
 import { expect } from '@playwright/test';
 
+import { uiGoto } from '@e2e/utils/ui';
+
 import { putRouteReq } from '@/apis/routes';
 import { API_ROUTES } from '@/config/constant';
 
@@ -54,7 +56,7 @@ test('route with vars created via Admin API', async ({ page }) => {
 
   await test.step('view route detail without error', async () => {
     // Navigate directly to the route detail page to avoid flaky table lookups
-    await page.goto(`/routes/detail/${routeId}`);
+    await uiGoto(page, '/routes/detail/$id', { id: routeId });
 
     // Verify the detail page loaded successfully
     await routesPom.isDetailPage(page);
