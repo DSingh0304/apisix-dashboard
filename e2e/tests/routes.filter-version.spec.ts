@@ -75,9 +75,9 @@ test.describe('Routes version filter', () => {
     });
 
     await test.step('filter by version v1 and verify only v1 routes are shown', async () => {
-      // Open the Version dropdown, then use keyboard to select v1 (first option)
-      await page.getByRole('combobox', { name: 'Version' }).click();
-      // v1 is the first option (sorted alphabetically), press Enter to select it
+      // Type 'v1' into the version input. We use fill to be sure the value is set.
+      await page.locator('#version').fill('v1');
+      // press Enter to make sure the value is registered if it's an AutoComplete that needs it
       await page.keyboard.press('Enter');
 
       // Click the Search button to apply the filter
@@ -102,9 +102,8 @@ test.describe('Routes version filter', () => {
       // Wait for routes to be visible again
       await expect(page.getByRole('cell', { name: 'route_v1_name_1' }).first()).toBeVisible();
 
-      // Open the Version dropdown, then arrow down to v2 (second option) and select
-      await page.getByRole('combobox', { name: 'Version' }).click();
-      await page.keyboard.press('ArrowDown'); // move to v2
+      // Type 'v2' into the version input
+      await page.locator('#version').fill('v2');
       await page.keyboard.press('Enter');
 
       // Click the Search button to apply the filter
