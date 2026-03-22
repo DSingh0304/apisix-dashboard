@@ -104,9 +104,13 @@ export const filterRoutes = (
     // Filter by labels: match provided label key:value tokens against route label pairs
     // Note: Routes without any labels are excluded when labels filter is active
     if (filters.labels) {
-      const labelFilters = Array.isArray(filters.labels)
+      const rawLabelFilters = Array.isArray(filters.labels)
         ? filters.labels
         : [filters.labels];
+      const labelFilters = rawLabelFilters
+        .map((label) => String(label).trim())
+        .filter((label) => label.length > 0);
+
       if (labelFilters.length > 0) {
         if (!routeData.labels) return false;
 
@@ -144,18 +148,27 @@ export const filterRoutes = (
  * Check if client-side filtering is needed
  * Returns true if any filter parameters are present
  */
-export const needsClientSideFiltering = (
-  filters: RouteFilters
-): boolean => {
+export const needsClientSideFiltering = (filters: RouteFilters): boolean => {
+  const hasLabelFilters = (() => {
+    if (!filters.labels) return false;
+    const rawLabelFilters = Array.isArray(filters.labels)
+      ? filters.labels
+      : [filters.labels];
+    const labelFilters = rawLabelFilters
+      .map((label) => String(label).trim())
+      .filter((label) => label.length > 0);
+    return labelFilters.length > 0;
+  })();
+
   return Boolean(
     filters.id ||
-    filters.host ||
-    filters.path ||
-    filters.description ||
-    filters.plugin ||
-    (filters.labels && filters.labels.length > 0) ||
-    filters.version ||
-    (filters.status && filters.status !== STATUS_ALL)
+      filters.host ||
+      filters.path ||
+      filters.description ||
+      filters.plugin ||
+      hasLabelFilters ||
+      filters.version ||
+      (filters.status && filters.status !== STATUS_ALL)
   );
 };
 

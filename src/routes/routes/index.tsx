@@ -64,9 +64,20 @@ const SEARCH_PARAM_KEYS: (keyof SearchFormValues)[] = [
 
 const mapSearchParams = (values: Partial<SearchFormValues>) =>
   Object.fromEntries(
-    SEARCH_PARAM_KEYS
-      .map((key) => [key, values[key]] as const)
-      .filter(([, value]) => value !== undefined)
+    SEARCH_PARAM_KEYS.map((key) => [key, values[key]] as const).filter(
+      ([, value]) => {
+        if (value === undefined) {
+          return false;
+        }
+        if (typeof value === 'string' && value.trim() === '') {
+          return false;
+        }
+        if (Array.isArray(value) && value.length === 0) {
+          return false;
+        }
+        return true;
+      }
+    )
   ) as Partial<SearchFormValues>;
 
 export const RouteList = (props: RouteListProps) => {
