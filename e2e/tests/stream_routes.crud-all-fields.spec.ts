@@ -74,6 +74,9 @@ test('CRUD stream route with all fields', async ({ page }) => {
   const weightInput = firstRow.locator('input').nth(2);
   await weightInput.click();
   await weightInput.fill('100');
+  await weightInput.blur();
+  // eslint-disable-next-line playwright/no-wait-for-timeout
+  await page.waitForTimeout(500);
 
   // Submit and land on detail page
   await page.getByRole('button', { name: 'Add', exact: true }).click();

@@ -41,7 +41,15 @@ export const uiHasToastMsg = async (
 ) => {
   const alertMsg = page.getByRole('alert').filter(...filterOpts);
   // Increased timeout for CI environment (30s instead of default 5s)
-  await expect(alertMsg).toBeVisible({ timeout: 30000 });
+  try {
+    await expect(alertMsg).toBeVisible({ timeout: 25000 });
+  } catch (e) {
+    const alerts = await page.getByRole('alert').all();
+    const texts = await Promise.all(alerts.map((a) => a.textContent()));
+    console.error(`Failed to find toast with filter options: ${JSON.stringify(filterOpts)}`);
+    console.error(`Currently visible alerts: ${JSON.stringify(texts)}`);
+    throw e;
+  }
   await alertMsg.getByRole('button').click();
   await expect(alertMsg).not.toBeVisible();
 };

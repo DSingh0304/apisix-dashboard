@@ -61,6 +61,11 @@ export const produceRmEmptyUpstreamFields = produce(
     }
 
     if (draft.upstream) {
+      const u = draft.upstream as Record<string, unknown>;
+      delete u.name;
+      delete u.desc;
+      delete u.labels;
+
       if (draft.upstream.timeout && isAllUndefined(draft.upstream.timeout)) {
         delete draft.upstream.timeout;
       }

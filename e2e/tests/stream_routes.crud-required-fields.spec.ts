@@ -27,6 +27,7 @@ import { expect } from '@playwright/test';
 test.describe.configure({ mode: 'serial' });
 
 test('CRUD stream route with required fields', async ({ page }) => {
+  page.on('console', (msg) => console.log(`BROWSER [${msg.type()}]: ${msg.text()}`));
   // Navigate to stream routes page
   await streamRoutesPom.toIndex(page);
   await expect(page.getByRole('heading', { name: 'Stream Routes' })).toBeVisible();
@@ -67,6 +68,9 @@ test('CRUD stream route with required fields', async ({ page }) => {
   const weightInput = firstRow.locator('input').nth(2);
   await weightInput.click();
   await weightInput.fill('1');
+  await weightInput.blur();
+  // eslint-disable-next-line playwright/no-wait-for-timeout
+  await page.waitForTimeout(500);
 
   // Submit and land on detail page
   await page.getByRole('button', { name: 'Add', exact: true }).click();

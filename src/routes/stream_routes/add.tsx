@@ -23,12 +23,12 @@ import { useTranslation } from 'react-i18next';
 
 import { postStreamRouteReq } from '@/apis/stream_routes';
 import { FormSubmitBtn } from '@/components/form/Btn';
-import { produceRoute } from '@/components/form-slice/FormPartRoute/util';
 import { FormPartStreamRoute } from '@/components/form-slice/FormPartStreamRoute';
 import {
   StreamRoutePostSchema,
   type StreamRoutePostType,
 } from '@/components/form-slice/FormPartStreamRoute/schema';
+import { produceStreamRoute } from '@/components/form-slice/FormPartStreamRoute/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import PageHeader from '@/components/page/PageHeader';
 import { StreamRoutesErrorComponent } from '@/components/page-slice/stream_routes/ErrorComponent';
@@ -46,7 +46,7 @@ export const StreamRouteAddForm = (props: Props) => {
 
   const postStreamRoute = useMutation({
     mutationFn: (d: StreamRoutePostType) =>
-      postStreamRouteReq(req, produceRoute(d)),
+      postStreamRouteReq(req, produceStreamRoute(d)),
     async onSuccess(res) {
       notifications.show({
         message: t('info.add.success', { name: t('streamRoutes.singular') }),
