@@ -18,9 +18,8 @@
 import { routesPom } from '@e2e/pom/routes';
 import { e2eReq } from '@e2e/utils/req';
 import { test } from '@e2e/utils/test';
-import { expect } from '@playwright/test';
-
 import { uiGoto } from '@e2e/utils/ui';
+import { expect } from '@playwright/test';
 
 import { putRouteReq } from '@/apis/routes';
 import { API_ROUTES } from '@/config/constant';
@@ -30,6 +29,12 @@ const routeId = 'test-vars-admin-api';
 test.beforeAll(async () => {
   await e2eReq.delete(`${API_ROUTES}/${routeId}`).catch(() => {
     // Ignore cleanup errors; route may not exist yet.
+  });
+});
+
+test.afterAll(async () => {
+  await e2eReq.delete(`${API_ROUTES}/${routeId}`).catch(() => {
+    // Ignore cleanup errors; route may already be deleted.
   });
 });
 
@@ -63,11 +68,5 @@ test('route with vars created via Admin API', async ({ page }) => {
 
     const name = page.getByLabel('Name', { exact: true }).first();
     await expect(name).toHaveValue(routeId);
-  });
-});
-
-test.afterAll(async () => {
-  await e2eReq.delete(`${API_ROUTES}/${routeId}`).catch(() => {
-    // Ignore cleanup errors; route may already be deleted.
   });
 });
