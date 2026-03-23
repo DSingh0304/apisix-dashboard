@@ -40,10 +40,26 @@ export const uiHasToastMsg = async (
   ...filterOpts: Parameters<Locator['filter']>
 ) => {
   const alertMsg = page.getByRole('alert').filter(...filterOpts);
-  // Increased timeout for CI environment (30s instead of default 5s)
-  await expect(alertMsg).toBeVisible({ timeout: 30000 });
+  try {
+    // Increased timeout for CI environment (30s instead of default 5s)
+    await expect(alertMsg).toBeVisible({ timeout: 30000 });
+  } catch (e) {
+    const allAlerts = await page.getByRole('alert').allTextContents();
+    console.log('Available alerts:', allAlerts);
+    throw e;
+  }
   await alertMsg.getByRole('button').click();
   await expect(alertMsg).not.toBeVisible();
+};
+
+export const uiEnsureSettingsClosed = async (page: Page) => {
+  const settingsModal = page.getByRole('dialog', { name: 'Settings' });
+  // Wait a bit for modal to potentially appear
+  await page.waitForTimeout(500);
+  if (await settingsModal.isVisible()) {
+    await settingsModal.getByRole('button', { name: 'Close' }).click();
+    await expect(settingsModal).toBeHidden();
+  }
 };
 
 export async function uiCannotSubmitEmptyForm(page: Page, pom: CommonPOM) {

@@ -40,7 +40,11 @@ import {
   produceRoute,
   produceVarsToForm,
 } from '@/components/form-slice/FormPartRoute/util';
-import { produceToUpstreamForm } from '@/components/form-slice/FormPartUpstream/util';
+import {
+  produceRmEmptyUpstreamFields,
+  produceToNestedUpstreamForm,
+  produceToUpstreamForm,
+} from '@/components/form-slice/FormPartUpstream/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import { FormSectionGeneral } from '@/components/form-slice/FormSectionGeneral';
 import { DeleteResourceBtn } from '@/components/page/DeleteResourceBtn';
@@ -48,6 +52,7 @@ import PageHeader from '@/components/page/PageHeader';
 import { API_ROUTES } from '@/config/constant';
 import { req } from '@/config/req';
 import { type APISIXType } from '@/types/schema/apisix';
+import { pipeProduce } from '@/utils/producer';
 
 type Props = {
   readOnly: boolean;
@@ -81,8 +86,9 @@ const RouteDetailForm = (props: Props) => {
   });
 
   useEffect(() => {
-    const upstreamProduced = produceToUpstreamForm(
-      routeData.value.upstream || {},
+    if (!routeData.value) return;
+
+    const upstreamProduced = produceToNestedUpstreamForm(
       routeData.value
     );
     form.reset(produceVarsToForm(upstreamProduced));
@@ -90,7 +96,13 @@ const RouteDetailForm = (props: Props) => {
 
   const putRoute = useMutation({
     mutationFn: (d: RoutePutType) =>
-      putRouteReq(req, produceRoute(d) as APISIXType['Route']),
+      putRouteReq(
+        req,
+        pipeProduce(
+          produceRmEmptyUpstreamFields,
+          produceRoute
+        )(d) as APISIXType['Route']
+      ),
     async onSuccess() {
       notifications.show({
         message: t('info.edit.success', { name: t('routes.singular') }),
@@ -98,6 +110,13 @@ const RouteDetailForm = (props: Props) => {
       });
       await refetch();
       setReadOnly(true);
+    },
+    onError(err: Error & { response?: { data?: { error_msg?: string } } }) {
+      notifications.show({
+        title: 'Error',
+        message: err.response?.data?.error_msg || err.message || 'Failed to update route',
+        color: 'red',
+      });
     },
   });
 

@@ -32,6 +32,10 @@ import { getServiceQueryOptions } from '@/apis/hooks';
 import { putServiceReq } from '@/apis/services';
 import { FormSubmitBtn } from '@/components/form/Btn';
 import { FormPartService } from '@/components/form-slice/FormPartService';
+import {
+  produceRmEmptyUpstreamFields,
+  produceToNestedUpstreamForm,
+} from '@/components/form-slice/FormPartUpstream/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import { FormSectionGeneral } from '@/components/form-slice/FormSectionGeneral';
 import { DeleteResourceBtn } from '@/components/page/DeleteResourceBtn';
@@ -65,14 +69,17 @@ const ServiceDetailForm = (props: Props) => {
   });
 
   useEffect(() => {
-    form.reset(serviceData.value);
+    form.reset(produceToNestedUpstreamForm(serviceData.value));
   }, [serviceData, form]);
 
   const putService = useMutation({
     mutationFn: (d: APISIXType['Service']) =>
       putServiceReq(
         req,
-        pipeProduce(produceRmUpstreamWhenHas('upstream_id'))(d)
+        pipeProduce(
+          produceRmEmptyUpstreamFields,
+          produceRmUpstreamWhenHas('upstream_id')
+        )(d) as APISIXType['Service']
       ),
     async onSuccess() {
       notifications.show({

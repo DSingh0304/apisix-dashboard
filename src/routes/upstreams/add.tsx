@@ -26,6 +26,7 @@ import { postUpstreamReq } from '@/apis/upstreams';
 import { FormSubmitBtn } from '@/components/form/Btn';
 import { FormPartUpstream } from '@/components/form-slice/FormPartUpstream';
 import { FormPartUpstreamSchema } from '@/components/form-slice/FormPartUpstream/schema';
+import { produceRmEmptyUpstreamFields } from '@/components/form-slice/FormPartUpstream/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import PageHeader from '@/components/page/PageHeader';
 import { req } from '@/config/req';
@@ -63,7 +64,7 @@ const UpstreamAddForm = () => {
     <FormProvider {...form}>
       <form
         onSubmit={form.handleSubmit((d) =>
-          postUpstream.mutateAsync(pipeProduce()(d))
+          postUpstream.mutateAsync(pipeProduce(produceRmEmptyUpstreamFields)(d))
         )}
       >
         <FormPartUpstream />

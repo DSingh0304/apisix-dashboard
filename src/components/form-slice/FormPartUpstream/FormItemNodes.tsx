@@ -16,7 +16,6 @@
  */
 import { EditableProTable, type ProColumns } from '@ant-design/pro-components';
 import { Button, InputWrapper, type InputWrapperProps } from '@mantine/core';
-import { useClickOutside } from '@mantine/hooks';
 import { toJS } from 'mobx';
 import { useLocalObservable } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
@@ -195,6 +194,11 @@ export const FormItemNodes = <T extends FieldValues>(
     get editableKeys() {
       return this.disabled ? [] : this.values.map((item) => item.id);
     },
+    save() {
+      const vals = parseToUpstreamNodes(toJS(this.values));
+      fOnChange?.(vals);
+      restProps.onChange?.(vals);
+    },
   }));
   useEffect(() => {
     ob.setValues(parseToDataSource(value));
@@ -203,11 +207,7 @@ export const FormItemNodes = <T extends FieldValues>(
     ob.setDisabled(disabled);
   }, [disabled, ob]);
 
-  const ref = useClickOutside(() => {
-    const vals = parseToUpstreamNodes(toJS(ob.values));
-    fOnChange?.(vals);
-    restProps.onChange?.(vals);
-  }, ['mouseup', 'touchend', 'mousedown', 'touchstart']);
+
 
   return (
     <InputWrapper
@@ -215,7 +215,6 @@ export const FormItemNodes = <T extends FieldValues>(
       label={label}
       required={required}
       withAsterisk={withAsterisk}
-      ref={ref}
     >
       <input name={fName} type="hidden" />
       <AntdConfigProvider>
@@ -232,6 +231,7 @@ export const FormItemNodes = <T extends FieldValues>(
             editableKeys: ob.editableKeys,
             onValuesChange(_, dataSource) {
               ob.setValues(dataSource);
+              ob.save();
             },
             actionRender: (row) => {
               return [
@@ -256,7 +256,10 @@ export const FormItemNodes = <T extends FieldValues>(
         size="xs"
         color="cyan"
         style={{ borderColor: 'whitesmoke' }}
-        onClick={() => ob.append(genRecord())}
+        onClick={() => {
+          ob.append(genRecord());
+          ob.save();
+        }}
         {...(disabled && { display: 'none' })}
       >
         {t('form.upstreams.nodes.add')}

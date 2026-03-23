@@ -40,7 +40,10 @@ import {
   FormPartUpstreamSchema,
   type FormPartUpstreamType,
 } from '@/components/form-slice/FormPartUpstream/schema';
-import { produceToUpstreamForm } from '@/components/form-slice/FormPartUpstream/util';
+import {
+  produceRmEmptyUpstreamFields,
+  produceToUpstreamForm,
+} from '@/components/form-slice/FormPartUpstream/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import { FormSectionGeneral } from '@/components/form-slice/FormSectionGeneral';
 import { DeleteResourceBtn } from '@/components/page/DeleteResourceBtn';
@@ -107,7 +110,7 @@ const UpstreamDetailForm = (
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit((d: FormPartUpstreamType) => {
-            putUpstream.mutateAsync(pipeProduce()(d));
+            putUpstream.mutateAsync(pipeProduce(produceRmEmptyUpstreamFields)(d));
           })}
         >
           <FormSectionGeneral readOnly />

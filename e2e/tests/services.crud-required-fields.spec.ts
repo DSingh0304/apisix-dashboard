@@ -36,6 +36,19 @@ test.beforeAll(async () => {
 });
 
 test('should CRUD service with required fields', async ({ page }) => {
+  page.on('console', (msg) => {
+    if (msg.type() === 'log' || msg.type() === 'error') {
+      console.log(`[Browser ${msg.type()}] ${msg.text()}`);
+    }
+  });
+
+  page.on('response', (response) => {
+    if (!response.ok() && response.url().includes('/apisix/admin')) {
+      console.log(`[Response Error] ${response.url()} -> ${response.status()} ${response.statusText()}`);
+      response.json().then(j => console.log('Response body:', JSON.stringify(j))).catch(() => {});
+    }
+  });
+
   await servicesPom.toIndex(page);
   await servicesPom.isIndexPage(page);
 
