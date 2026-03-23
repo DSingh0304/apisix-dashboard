@@ -63,7 +63,15 @@ export async function uiFillUpstreamRequiredFields(
 
   // Add a third node and then remove it to test deletion functionality
   await secondRowHost.blur();
-  if (page) await page.waitForTimeout(500);
+  let p: Page;
+  if (
+    typeof (ctx as Locator).page === 'function'
+  ) {
+    p = (ctx as Locator).page();
+  } else {
+    p = ctx as Page;
+  }
+  await p.waitForTimeout(500);
   await addNodeBtn.click();
   await expect(rows).toHaveCount(3, { timeout: 10000 });
   await rows.nth(2).getByRole('button', { name: 'Delete' }).click();
