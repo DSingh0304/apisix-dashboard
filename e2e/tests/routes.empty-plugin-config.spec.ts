@@ -35,6 +35,20 @@ test.beforeAll(async () => {
   await deleteAllRoutes(e2eReq);
 });
 
+test.beforeEach(async ({ page }) => {
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') {
+      console.error(`BROWSER ERROR: ${msg.text()}`);
+    } else {
+      console.log(`BROWSER [${msg.type()}]: ${msg.text()}`);
+    }
+  });
+
+  page.on('pageerror', (err) => {
+    console.error(`BROWSER PAGE ERROR: ${err.message}`);
+  });
+});
+
 test('should preserve plugin with empty configuration (key-auth) after edit', async ({
   page,
 }) => {
