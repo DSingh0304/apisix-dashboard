@@ -37,29 +37,42 @@ const isAllUndefined = (obj: Record<string, unknown>) =>
     (v) => v === undefined || v === null || v === '' || Number.isNaN(v)
   );
 
-export const produceRmEmptyUpstreamFields = produce((draft: Record<string, any>) => {
-  if (draft.timeout && isAllUndefined(draft.timeout)) {
-    delete draft.timeout;
-  }
-  if (draft.keepalive_pool && isAllUndefined(draft.keepalive_pool)) {
-    delete draft.keepalive_pool;
-  }
-  if (draft.tls && isAllUndefined(draft.tls)) {
-    delete draft.tls;
-  }
+export const produceRmEmptyUpstreamFields = produce(
+  (
+    draft: {
+      timeout?: Record<string, unknown>;
+      keepalive_pool?: Record<string, unknown>;
+      tls?: Record<string, unknown>;
+      upstream?: {
+        timeout?: Record<string, unknown>;
+        keepalive_pool?: Record<string, unknown>;
+        tls?: Record<string, unknown>;
+      };
+    } & Record<string, unknown>
+  ) => {
+    if (draft.timeout && isAllUndefined(draft.timeout)) {
+      delete draft.timeout;
+    }
+    if (draft.keepalive_pool && isAllUndefined(draft.keepalive_pool)) {
+      delete draft.keepalive_pool;
+    }
+    if (draft.tls && isAllUndefined(draft.tls)) {
+      delete draft.tls;
+    }
 
-  if (draft.upstream) {
-    if (draft.upstream.timeout && isAllUndefined(draft.upstream.timeout)) {
-      delete draft.upstream.timeout;
-    }
-    if (
-      draft.upstream.keepalive_pool &&
-      isAllUndefined(draft.upstream.keepalive_pool)
-    ) {
-      delete draft.upstream.keepalive_pool;
-    }
-    if (draft.upstream.tls && isAllUndefined(draft.upstream.tls)) {
-      delete draft.upstream.tls;
+    if (draft.upstream) {
+      if (draft.upstream.timeout && isAllUndefined(draft.upstream.timeout)) {
+        delete draft.upstream.timeout;
+      }
+      if (
+        draft.upstream.keepalive_pool &&
+        isAllUndefined(draft.upstream.keepalive_pool)
+      ) {
+        delete draft.upstream.keepalive_pool;
+      }
+      if (draft.upstream.tls && isAllUndefined(draft.upstream.tls)) {
+        delete draft.upstream.tls;
+      }
     }
   }
-});
+);

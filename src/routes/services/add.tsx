@@ -25,10 +25,10 @@ import { postServiceReq, type ServicePostType } from '@/apis/services';
 import { FormSubmitBtn } from '@/components/form/Btn';
 import { FormPartService } from '@/components/form-slice/FormPartService';
 import { ServicePostSchema } from '@/components/form-slice/FormPartService/schema';
+import { produceRmEmptyUpstreamFields } from '@/components/form-slice/FormPartUpstream/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import PageHeader from '@/components/page/PageHeader';
 import { req } from '@/config/req';
-import { produceRmEmptyUpstreamFields } from '@/components/form-slice/FormPartUpstream/util';
 import { produceRmUpstreamWhenHas } from '@/utils/form-producer';
 import { pipeProduce } from '@/utils/producer';
 
