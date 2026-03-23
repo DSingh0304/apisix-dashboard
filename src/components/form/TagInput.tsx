@@ -48,9 +48,16 @@ export const FormItemTagsInput = <T extends FieldValues, R>(
   // Defensive: ensure value is always an array of strings to prevent
   // "a.trim is not a function" errors when non-string values are passed
   const rawValue = Array.isArray(value) ? value : [];
-  const tagsInputValue = from
-    ? rawValue.map(from).filter((item: unknown): item is string => typeof item === 'string')
-    : rawValue.filter((item: unknown): item is string => typeof item === 'string');
+  const tagsInputValue = (from ? rawValue.map(from) : rawValue).filter(
+    (item: unknown): item is string => {
+      const isString = typeof item === 'string';
+      if (!isString) {
+        // eslint-disable-next-line no-console
+        console.warn('[TagInput] Filtered out non-string value:', item);
+      }
+      return isString;
+    }
+  );
 
   return (
     <TagsInput
