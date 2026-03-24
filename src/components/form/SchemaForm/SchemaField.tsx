@@ -24,6 +24,7 @@ import { FormItemSwitch } from '../Switch';
 import { FormItemTextArray } from '../TextArray';
 import { FormItemTextInput } from '../TextInput';
 import { ArrayField } from './ArrayField';
+import { PatternPropertiesField } from './PatternPropertiesField';
 import type { JSONSchema7 } from './types';
 
 export type SchemaFieldProps = {
@@ -166,6 +167,17 @@ export const SchemaField = (
         );
     }
 
+    // Handle patternProperties → dynamic key-value editor
+    if (schema.patternProperties) {
+        return (
+            <PatternPropertiesField
+                name={name}
+                label={schema.title || formatLabel(name)}
+                description={schema.description}
+            />
+        );
+    }
+
     // Handle string → TextInput (default)
     return (
         <FormItemTextInput
@@ -183,6 +195,24 @@ export const SchemaField = (
 };
 
 /**
+ * Known acronyms to always render in UPPERCASE
+ */
+const ACRONYMS = new Set([
+    'oauth',
+    'id',
+    'uri',
+    'url',
+    'api',
+    'jwt',
+    'ip',
+    'ttl',
+    'http',
+    'https',
+    'ssl',
+    'tls',
+]);
+
+/**
  * Formats a field name into a human-readable label
  * e.g., "oauth_client_id" → "OAuth Client ID"
  */
@@ -192,6 +222,11 @@ function formatLabel(name: string): string {
 
     return fieldName
         .split('_')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .map((word) => {
+            const lower = word.toLowerCase();
+            return ACRONYMS.has(lower)
+                ? lower.toUpperCase()
+                : word.charAt(0).toUpperCase() + word.slice(1);
+        })
         .join(' ');
 }

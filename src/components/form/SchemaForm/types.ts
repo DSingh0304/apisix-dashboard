@@ -67,4 +67,10 @@ export interface JSONSchema7 {
 
     // Dependencies (Draft 7)
     dependencies?: Record<string, JSONSchema7 | string[]>;
+
+    // Object constraints extensions
+    patternProperties?: Record<string, JSONSchema7>;
+
+    // APISIX extension: marks fields as sensitive (rendered as PasswordInput)
+    encrypt_fields?: string[];
 }
