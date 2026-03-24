@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 import { screen } from '@testing-library/react';
+import { useFormContext } from 'react-hook-form';
 import { describe, expect, it } from 'vitest';
 
-import { renderWithForm } from '@/test/utils';
+import { FormWrapper, renderWithForm } from '@/test/utils';
 
 import { SchemaForm } from './index';
 import type { JSONSchema7 } from './types';
@@ -409,5 +410,69 @@ describe('SchemaForm — oneOf field isolation', () => {
         });
         expect(screen.getByLabelText('Field B')).toBeInTheDocument();
         expect(screen.queryByLabelText('Field A')).not.toBeInTheDocument();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Form state cleanup (unregister logic)
+// ---------------------------------------------------------------------------
+
+/**
+ * A test utility component that renders the current form values as JSON
+ * to the DOM so we can assert on the internal RHF state.
+ */
+const ValuesMonitor = () => {
+    const { watch } = useFormContext();
+    const values = watch();
+    return <div data-testid="form-values">{JSON.stringify(values)}</div>;
+};
+
+describe('SchemaForm — state cleanup', () => {
+    it('unregisters fields from old oneOf branches when the discriminator changes', async () => {
+        const schema: JSONSchema7 = {
+            type: 'object',
+            oneOf: [
+                {
+                    properties: {
+                        type: { const: 'auth_v1' },
+                        v1_key: { type: 'string', title: 'V1 Key' },
+                    },
+                },
+                {
+                    properties: {
+                        type: { const: 'auth_v2' },
+                        v2_token: { type: 'string', title: 'V2 Token' },
+                    },
+                },
+            ],
+        };
+
+        // 1. Initial render with auth_v1 and a value for v1_key
+        const { rerender } = renderWithForm(
+            <>
+                <SchemaForm schema={schema} />
+                <ValuesMonitor />
+            </>,
+            { defaultValues: { type: 'auth_v1', v1_key: 'stale-data' } }
+        );
+
+        let values = JSON.parse(screen.getByTestId('form-values').textContent!);
+        expect(values).toHaveProperty('v1_key', 'stale-data');
+
+        // 2. Switch to auth_v2 - v1_key should be UNREGISTERED and GONE
+        rerender(
+            <FormWrapper defaultValues={{ type: 'auth_v2', v2_token: 'new-data' }}>
+                <>
+                    <SchemaForm schema={schema} />
+                    <ValuesMonitor />
+                </>
+            </FormWrapper>
+        );
+
+        values = JSON.parse(screen.getByTestId('form-values').textContent!);
+        expect(values).toHaveProperty('type', 'auth_v2');
+        expect(values).toHaveProperty('v2_token', 'new-data');
+        // This is the critical part: v1_key must be removed from the object
+        expect(values).not.toHaveProperty('v1_key');
     });
 });

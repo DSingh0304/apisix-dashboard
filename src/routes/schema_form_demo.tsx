@@ -31,8 +31,9 @@ import {
 import { createFileRoute } from '@tanstack/react-router';
 import { FormProvider, useForm } from 'react-hook-form';
 
-import { createSchemaResolver, SchemaForm } from '@/components/form/SchemaForm';
+import { SchemaForm } from '@/components/form/SchemaForm';
 import type { JSONSchema7 } from '@/components/form/SchemaForm/types';
+import { createSchemaResolver } from '@/components/form/SchemaForm/validation';
 
 /**
  * Demo schema showing oneOf and dependencies support
