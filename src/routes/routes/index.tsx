@@ -36,6 +36,7 @@ import type { APISIXType } from '@/types/schema/apisix';
 import { pageSearchSchema, type PageSearchType } from '@/types/schema/pageSearch';
 import {
   filterRoutes,
+  isDataIncomplete,
   needsClientSideFiltering,
   paginateResults,
 } from '@/utils/clientSideFilter';
@@ -272,18 +273,21 @@ export const RouteList = (props: RouteListProps) => {
             ],
           },
         }}
-        tableAlertRender={
-          needsAllData
-            ? () => (
-              <span style={{ color: '#faad14' }}>
-                {t('table.searchLimit', {
-                  defaultValue: `Only the first ${PAGE_SIZE_MAX} routes are fetched from the database. Client-side filtering is applied to these records.`,
-                  count: PAGE_SIZE_MAX,
-                })}
-              </span>
-            )
-            : undefined
-        }
+        tableAlertRender={() => {
+          if (!needsAllData || !allData?.list) return false;
+
+          const isIncomplete = isDataIncomplete(allData.list.length, PAGE_SIZE_MAX);
+          if (!isIncomplete) return false;
+
+          return (
+            <span style={{ color: '#faad14' }}>
+              {t('table.limitReached', {
+                defaultValue: `Note: Only the first ${PAGE_SIZE_MAX} records were checked. Some matches may be missing from the results.`,
+                count: PAGE_SIZE_MAX,
+              })}
+            </span>
+          );
+        }}
       />
     </AntdConfigProvider>
   );

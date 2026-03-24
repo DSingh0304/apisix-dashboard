@@ -395,7 +395,7 @@
     "actions": "İşlemler",
     "disabled": "Pasif",
     "enabled": "Aktif",
-    "searchLimit": "Veritabanından sadece ilk {{count}} route getirildi. İstemci tarafı filtreleme bu kayıtlara uygulanır."
+    "searchLimitReached": "Not: Yalnızca ilk {{count}} kayıt kontrol edildi. Bazı eşleşmeler sonuçlarda eksik olabilir."
   },
   "upstreams": {
     "singular": "Upstream"

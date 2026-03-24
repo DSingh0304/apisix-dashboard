@@ -395,7 +395,7 @@
     "actions": "Actions",
     "disabled": "Disabled",
     "enabled": "Enabled",
-    "searchLimit": "Only the first {{count}} routes are fetched from the database. Client-side filtering is applied to these records."
+    "limitReached": "Note: Only the first {{count}} records were checked. Some matches may be missing from the results."
   },
   "upstreams": {
     "singular": "Upstream"

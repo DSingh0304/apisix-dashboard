@@ -395,7 +395,7 @@
     "actions": "Aktionen",
     "disabled": "Deaktiviert",
     "enabled": "Aktiviert",
-    "searchLimit": "Es werden nur die ersten {{count}} Routen aus der Datenbank abgerufen. Die clientseitige Filterung wird auf diese Datensätze angewendet."
+    "searchLimitReached": "Hinweis: Es wurden nur die ersten {{count}} Datensätze geprüft. Einige Treffer könnten fehlen."
   },
   "upstreams": {
     "singular": "Upstream"

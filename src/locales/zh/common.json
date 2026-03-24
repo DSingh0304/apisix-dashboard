@@ -395,7 +395,7 @@
     "actions": "操作",
     "disabled": "已禁用",
     "enabled": "已启用",
-    "searchLimit": "仅从数据库中获取前 {{count}} 条路由。客户端过滤应用于这些记录。"
+    "limitReached": "注意：仅检查了前 {{count}} 条记录。 结果中可能会缺少某些匹配项。"
   },
   "upstreams": {
     "singular": "上游"

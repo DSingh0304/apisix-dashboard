@@ -395,7 +395,7 @@
     "actions": "Acciones",
     "disabled": "Deshabilitado",
     "enabled": "Habilitado",
-    "searchLimit": "Solo se recuperan las primeras {{count}} rutas de la base de datos. El filtrado del lado del cliente se aplica a estos registros."
+    "searchLimitReached": "Nota: Solo se revisaron los primeros {{count}} registros. Es posible que falten coincidencias en los resultados."
   },
   "upstreams": {
     "singular": "Upstream"

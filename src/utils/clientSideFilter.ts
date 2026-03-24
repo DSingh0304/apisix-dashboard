@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { STATUS_ALL } from '@/config/constant';
+import { ResourceStatus, STATUS_ALL } from '@/config/constant';
 import type { APISIXType } from '@/types/schema/apisix';
 
 export interface RouteFilters {
@@ -26,7 +26,7 @@ export interface RouteFilters {
   plugin?: string;
   labels?: string[] | string;
   version?: string;
-  status?: string;
+  status?: string | number;
 }
 
 /**
@@ -134,10 +134,19 @@ export const filterRoutes = (
     }
 
     // Filter by status (defaulting to 1 if status is undefined as per APISIX schema)
-    if (filters.status && filters.status !== STATUS_ALL) {
-      const isEnabled = (routeData.status ?? 1) === 1;
-      if (filters.status === 'Enabled' && !isEnabled) return false;
-      if (filters.status === 'Disabled' && isEnabled) return false;
+    if (filters.status !== undefined && filters.status !== STATUS_ALL) {
+      const isEnabled = (routeData.status ?? ResourceStatus.ENABLED) === ResourceStatus.ENABLED;
+      if (
+        filters.status === ResourceStatus.ENABLED ||
+        filters.status === 'Enabled'
+      ) {
+        if (!isEnabled) return false;
+      } else if (
+        filters.status === ResourceStatus.DISABLED ||
+        filters.status === 'Disabled'
+      ) {
+        if (isEnabled) return false;
+      }
     }
 
     return true;
@@ -168,7 +177,7 @@ export const needsClientSideFiltering = (filters: RouteFilters): boolean => {
       filters.plugin ||
       hasLabelFilters ||
       filters.version ||
-      (filters.status && filters.status !== STATUS_ALL)
+      (filters.status !== undefined && filters.status !== STATUS_ALL)
   );
 };
 
@@ -186,4 +195,11 @@ export const paginateResults = <T>(
     list: items.slice(startIndex, endIndex),
     total: items.length,
   };
+};
+/**
+ * Check if the current data set might be incomplete for filtering
+ * (i.e., we hit the PAGE_SIZE_MAX limit)
+ */
+export const isDataIncomplete = (totalFetched: number, limit: number): boolean => {
+  return totalFetched >= limit;
 };

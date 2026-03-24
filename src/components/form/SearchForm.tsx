@@ -18,7 +18,7 @@ import { AutoComplete, Button, Col, Form, Input, Row, Select, Space } from 'antd
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { STATUS_ALL } from '@/config/constant';
+import { ResourceStatus, STATUS_ALL } from '@/config/constant';
 
 export type SearchFormValues = {
   name?: string;
@@ -29,12 +29,12 @@ export type SearchFormValues = {
   plugin?: string;
   labels?: string[];
   version?: string;
-  status?: string;
+  status?: string | number;
 };
 
 type Option = {
   label: string;
-  value: string;
+  value: string | number;
 };
 
 type SearchFormProps = {
@@ -67,11 +67,11 @@ export const SearchForm = (props: SearchFormProps) => {
       },
       {
         label: t('form.searchForm.status.enabled'),
-        value: 'Enabled',
+        value: ResourceStatus.ENABLED,
       },
       {
         label: t('form.searchForm.status.disabled'),
-        value: 'Disabled',
+        value: ResourceStatus.DISABLED,
       },
     ],
     [t]
