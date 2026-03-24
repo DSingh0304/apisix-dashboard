@@ -6,11 +6,26 @@ It is used by `PluginEditorDrawer` to provide a structured GUI for APISIX plugin
 ## Architecture
 
 SchemaForm
-├── index.tsx          # Root renderer. Dispatches to sub-renderers per schema keyword.
+├── index.tsx          # Main entry point. Purely re-exports components and types.
+├── SchemaForm.tsx     # Root renderer. Dispatches to sub-renderers per schema keyword.
 ├── SchemaField.tsx    # Maps a single property to the correct Mantine widget.
 ├── ArrayField.tsx     # Handles array-of-objects using RHF's useFieldArray.
 ├── validation.ts      # AJV-based validator. Provides createSchemaResolver for useForm().
 └── types.ts           # JSONSchema7 TypeScript interface (includes APISIX extensions).
+
+## Usage
+
+```tsx
+import { SchemaForm } from '@/components/form/SchemaForm';
+import { createSchemaResolver } from '@/components/form/SchemaForm/validation';
+
+const form = useForm({
+  resolver: createSchemaResolver(schema),
+});
+
+// In render
+<SchemaForm schema={schema} />
+```
 
 ## Supported JSON Schema Keywords
 
