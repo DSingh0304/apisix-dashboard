@@ -106,6 +106,29 @@ export const SchemaForm = ({ schema, basePath = '' }: SchemaFormProps) => {
 };
 
 /**
+ * Recursively collects all RHF field paths from a JSON Schema subtree.
+ * Example:
+ *   Schema: { redis_config: { type: 'object', properties: { host: {}, port: {} } } }
+ *   Returns: ["redis_config.host", "redis_config.port"]
+ *
+ * This ensures we explicitly unregister every leaf field, not just parent keys,
+ * which guarantees full subtree removal from formState.errors and formState.values.
+ */
+function collectAllPaths(schema: JSONSchema7, prefix = ''): string[] {
+    if (!schema.properties) return prefix ? [prefix] : [];
+
+    return Object.entries(schema.properties).flatMap(([key, propSchema]) => {
+        const fullPath = prefix ? `${prefix}.${key}` : key;
+        const child = propSchema as JSONSchema7;
+
+        if (child.type === 'object' && child.properties) {
+            return collectAllPaths(child, fullPath);
+        }
+        return [fullPath];
+    });
+}
+
+/**
  * OneOfFields - Renders conditional field groups based on a discriminator field
  */
 const OneOfFields = ({
@@ -132,9 +155,14 @@ const OneOfFields = ({
         () =>
             schema.oneOf!.flatMap((branch) => {
                 const b = branch as JSONSchema7;
-                return Object.keys(b.properties ?? {}).filter(
-                    (k) => k !== firstDiscriminator
-                );
+                const filtered: JSONSchema7 = {
+                    properties: Object.fromEntries(
+                        Object.entries(b.properties ?? {}).filter(
+                            ([k]) => k !== firstDiscriminator
+                        )
+                    ),
+                };
+                return collectAllPaths(filtered);
             }),
         [schema.oneOf, firstDiscriminator]
     );
@@ -307,9 +335,14 @@ const AnyOfFields = ({
         () =>
             schema.anyOf!.flatMap((branch) => {
                 const b = branch as JSONSchema7;
-                return Object.keys(b.properties ?? {}).filter(
-                    (k) => k !== firstDiscriminator
-                );
+                const filtered: JSONSchema7 = {
+                    properties: Object.fromEntries(
+                        Object.entries(b.properties ?? {}).filter(
+                            ([k]) => k !== firstDiscriminator
+                        )
+                    ),
+                };
+                return collectAllPaths(filtered);
             }),
         [schema.anyOf, firstDiscriminator]
     );
@@ -389,30 +422,53 @@ const IfThenElseFields = ({
 }) => {
     const { control, unregister } = useFormContext();
 
-    const allValues = useWatch({ control });
+    // Extract ONLY the field names used in the 'if' condition
+    const ifFieldNames = useMemo(() => {
+        if (!schema.if?.properties) return [];
+        return Object.keys(schema.if.properties).map((key) =>
+            basePath ? `${basePath}.${key}` : key
+        );
+    }, [schema.if, basePath]);
+
+    // Watch exactly the fields needed for the condition, not the whole form
+    const watchedValueArray = useWatch({
+        control,
+        name: ifFieldNames as [string, ...string[]],
+    });
 
     const { activeBranch, inactiveBranch } = useMemo(() => {
         if (!schema.if) return { activeBranch: null, inactiveBranch: null };
 
-        // Extract the values that live under our basePath (or the root).
-        const dataToCheck = ((basePath
-            ? (allValues as Record<string, unknown>)?.[basePath]
-            : allValues) ?? {}) as Record<string, unknown>;
+        // Reconstruct the data subset for AJV evaluation using the watched values
+        const dataToCheck = ifFieldNames.reduce<Record<string, unknown>>(
+            (acc, path, idx) => {
+                const key = basePath ? path.replace(`${basePath}.`, '') : path;
+                acc[key] = Array.isArray(watchedValueArray)
+                    ? watchedValueArray[idx]
+                    : watchedValueArray;
+                return acc;
+            },
+            {}
+        );
 
         const validate = ajv.compile(schema.if as object);
         const ifMatches = validate(dataToCheck);
         return ifMatches
-            ? { activeBranch: schema.then ?? null, inactiveBranch: schema.else ?? null }
-            : { activeBranch: schema.else ?? null, inactiveBranch: schema.then ?? null };
-    }, [schema.if, schema.then, schema.else, allValues, basePath]);
+            ? {
+                  activeBranch: schema.then ?? null,
+                  inactiveBranch: schema.else ?? null,
+              }
+            : {
+                  activeBranch: schema.else ?? null,
+                  inactiveBranch: schema.then ?? null,
+              };
+    }, [schema.if, schema.then, schema.else, ifFieldNames, watchedValueArray, basePath]);
 
     useEffect(() => {
         if (!inactiveBranch?.properties) return;
 
-        const toUnregister = Object.keys(inactiveBranch.properties);
-        const paths = toUnregister.map((f) =>
-            basePath ? `${basePath}.${f}` : f
-        );
+        const toUnregister = collectAllPaths(inactiveBranch);
+        const paths = toUnregister.map((f) => (basePath ? `${basePath}.${f}` : f));
         unregister(paths as Parameters<typeof unregister>[0]);
     }, [inactiveBranch, basePath, unregister]);
 
