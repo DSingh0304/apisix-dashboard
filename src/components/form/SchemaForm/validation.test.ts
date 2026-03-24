@@ -17,7 +17,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { JSONSchema7 } from './types';
-import { createSchemaResolver, validateWithSchema } from './validation';
+import { createSchemaResolver, serializePatternProperties, validateWithSchema } from './validation';
 
 // ---------------------------------------------------------------------------
 // validateWithSchema
@@ -211,5 +211,27 @@ describe('createSchemaResolver', () => {
         const result = await resolver({});
         const hostError = (result.errors as Record<string, { message: string }>).host;
         expect(hostError.message).toMatch(/required/i);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// PatternProperties Serialization
+// ---------------------------------------------------------------------------
+
+describe('serializePatternProperties', () => {
+    it('converts key-value pairs to a string map', () => {
+        const result = serializePatternProperties([
+            { key: 'X-Foo', value: 'bar' },
+            { key: 'X-Baz', value: 'qux' },
+        ]);
+        expect(result).toEqual({ 'X-Foo': 'bar', 'X-Baz': 'qux' });
+    });
+
+    it('filters out entries with empty keys', () => {
+        const result = serializePatternProperties([
+            { key: '', value: 'bar' },
+            { key: 'X-Keep', value: 'yes' },
+        ]);
+        expect(result).toEqual({ 'X-Keep': 'yes' });
     });
 });

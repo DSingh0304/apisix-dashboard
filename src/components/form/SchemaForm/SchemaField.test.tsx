@@ -210,14 +210,32 @@ describe('SchemaField — object array', () => {
 });
 
 // ---------------------------------------------------------------------------
+// patternProperties (dynamic key-value editor)
+// ---------------------------------------------------------------------------
+
+describe('SchemaField — patternProperties', () => {
+    it('renders an "Add Pair" button for patternProperties schema', () => {
+        renderField(
+            {
+                type: 'object',
+                title: 'Custom Headers',
+                patternProperties: { '^[a-zA-Z0-9-]+$': { type: 'string' } },
+            },
+            'headers'
+        );
+        expect(screen.getByText('Add Pair')).toBeInTheDocument();
+    });
+});
+
+// ---------------------------------------------------------------------------
 // Label auto-formatting (when schema.title is absent)
 // ---------------------------------------------------------------------------
 
 describe('SchemaField — label formatting', () => {
     it('formats snake_case field names into Title Case labels', () => {
         renderField({ type: 'string' }, 'oauth_client_id');
-        // formatLabel('oauth_client_id') capitalises each underscore-separated word
-        expect(screen.getByText('Oauth Client Id')).toBeInTheDocument();
+        // formatLabel('oauth_client_id') renders uppercase acronyms
+        expect(screen.getByText('OAUTH Client ID')).toBeInTheDocument();
     });
 });
 
