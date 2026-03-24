@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { screen } from '@testing-library/react';
-import { useFormContext } from 'react-hook-form';
+import { MantineProvider } from '@mantine/core';
+import { act, render, screen } from '@testing-library/react';
+import { FormProvider, useForm, useFormContext } from 'react-hook-form';
 import { describe, expect, it } from 'vitest';
 
 import { FormWrapper, renderWithForm } from '@/test/utils';
@@ -474,5 +475,179 @@ describe('SchemaForm — state cleanup', () => {
         expect(values).toHaveProperty('v2_token', 'new-data');
         // This is the critical part: v1_key must be removed from the object
         expect(values).not.toHaveProperty('v1_key');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Advanced state cleanup tests (Contributor feedback)
+// ---------------------------------------------------------------------------
+
+describe('SchemaForm — state cleanup (rapid switching)', () => {
+    const schema: JSONSchema7 = {
+        type: 'object',
+        oneOf: [
+            {
+                properties: {
+                    type: { const: 'a' },
+                    field_a: { type: 'string', title: 'Field A' },
+                },
+            },
+            {
+                properties: {
+                    type: { const: 'b' },
+                    field_b: { type: 'string', title: 'Field B' },
+                },
+            },
+        ],
+    };
+
+    it('has no stale values after rapid A→B→A switching', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let methods: any;
+
+        const TestComponent = () => {
+            methods = useForm({ defaultValues: { type: 'a', field_a: 'initial' } });
+            return (
+                <MantineProvider>
+                    <FormProvider {...methods}>
+                        <SchemaForm schema={schema} />
+                        <ValuesMonitor />
+                    </FormProvider>
+                </MantineProvider>
+            );
+        };
+
+        render(<TestComponent />);
+
+        // Current state: { type: 'a', field_a: 'initial' }
+        let values = JSON.parse(screen.getByTestId('form-values').textContent!);
+        expect(values).toHaveProperty('field_a', 'initial');
+
+        // 1. Switch A → B
+        await act(async () => {
+            methods.setValue('type', 'b');
+            methods.setValue('field_b', 'data');
+        });
+
+        values = JSON.parse(screen.getByTestId('form-values').textContent!);
+        expect(values).toHaveProperty('type', 'b');
+        expect(values).toHaveProperty('field_b', 'data');
+        expect(values).not.toHaveProperty('field_a'); // field_a must be purged
+
+        // 2. Switch B → A again
+        await act(async () => {
+            methods.setValue('type', 'a');
+            methods.setValue('field_a', 'fresh');
+        });
+
+        values = JSON.parse(screen.getByTestId('form-values').textContent!);
+        expect(values).toHaveProperty('type', 'a');
+        expect(values).toHaveProperty('field_a', 'fresh');
+        expect(values).not.toHaveProperty('field_b'); // field_b must be purged
+    });
+});
+
+describe('SchemaForm — state cleanup (nested objects)', () => {
+    const schema: JSONSchema7 = {
+        type: 'object',
+        oneOf: [
+            {
+                properties: {
+                    type: { const: 'redis' },
+                    redis_config: {
+                        type: 'object',
+                        title: 'Redis Config',
+                        properties: {
+                            host: { type: 'string', title: 'Host' },
+                            port: { type: 'integer', title: 'Port' },
+                        },
+                    },
+                },
+            },
+            {
+                properties: {
+                    type: { const: 'local' },
+                    local_path: { type: 'string', title: 'Local Path' },
+                },
+            },
+        ],
+    };
+
+    it('removes nested redis_config subtree from state when switching to local', () => {
+        const { rerender } = renderWithForm(
+            <>
+                <SchemaForm schema={schema} />
+                <ValuesMonitor />
+            </>,
+            {
+                defaultValues: {
+                    type: 'redis',
+                    redis_config: { host: '127.0.0.1', port: 6379 },
+                },
+            }
+        );
+
+        let values = JSON.parse(screen.getByTestId('form-values').textContent!);
+        expect(values.redis_config?.host).toBe('127.0.0.1');
+
+        rerender(
+            <FormWrapper defaultValues={{ type: 'local' }}>
+                <>
+                    <SchemaForm schema={schema} />
+                    <ValuesMonitor />
+                </>
+            </FormWrapper>
+        );
+
+        values = JSON.parse(screen.getByTestId('form-values').textContent!);
+        // The entire redis_config subtree must be gone, not just the parent key
+        expect(values).not.toHaveProperty('redis_config');
+    });
+});
+
+describe('SchemaForm — state cleanup (validation errors cleared on switch)', () => {
+    const schema: JSONSchema7 = {
+        type: 'object',
+        oneOf: [
+            {
+                properties: {
+                    type: { const: 'a' },
+                    field_a: { type: 'string', title: 'Field A' },
+                },
+                required: ['field_a'],
+            },
+            {
+                properties: {
+                    type: { const: 'b' },
+                    field_b: { type: 'string', title: 'Field B' },
+                },
+            },
+        ],
+    };
+
+    it('does not render branch A fields after switching to B', () => {
+        const { rerender } = renderWithForm(
+            <>
+                <SchemaForm schema={schema} />
+                <ValuesMonitor />
+            </>,
+            { defaultValues: { type: 'a', field_a: '' } } // invalid: required but empty
+        );
+
+        expect(screen.getByLabelText(/^Field A/)).toBeInTheDocument();
+
+        rerender(
+            <FormWrapper defaultValues={{ type: 'b' }}>
+                <>
+                    <SchemaForm schema={schema} />
+                    <ValuesMonitor />
+                </>
+            </FormWrapper>
+        );
+
+        // Field A must be unmounted and its value purged despite previous invalid state
+        expect(screen.queryByLabelText(/^Field A/)).not.toBeInTheDocument();
+        const values = JSON.parse(screen.getByTestId('form-values').textContent!);
+        expect(values).not.toHaveProperty('field_a');
     });
 });
