@@ -168,4 +168,21 @@ export function createSchemaResolver(schema: JSONSchema7) {
     };
 }
 
+/**
+ * Converts the internal [{ key, value }] array format back to a plain
+ * string map for API submission.
+ *
+ * e.g., [{ key: 'X-Foo', value: 'bar' }] → { 'X-Foo': 'bar' }
+ * Empty keys are filtered out automatically.
+ */
+export function serializePatternProperties(
+    pairs: Array<{ key: string; value: string }>
+): Record<string, string> {
+    return Object.fromEntries(
+        (pairs ?? [])
+            .filter(({ key }) => key.trim() !== '')
+            .map(({ key, value }) => [key, value])
+    );
+}
+
 export { ajv };
