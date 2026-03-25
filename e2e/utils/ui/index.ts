@@ -72,11 +72,18 @@ export async function uiFillHTTPStatuses(
   }
 }
 
-export const uiClearMonacoEditor = async (page: Page) => {
-  await page.evaluate(() => {
-    const editor = window.__monacoEditor__;
-    editor.getModel()?.setValue('');
-  });
+export const uiClearMonacoEditor = async (page: Page, editor?: Locator) => {
+  if (editor) {
+    // Use the specific editor element to find its Monaco instance
+    await editor.click();
+    await page.keyboard.press('Control+A');
+    await page.keyboard.press('Delete');
+  } else {
+    await page.evaluate(() => {
+      const ed = window.__monacoEditor__;
+      ed.getModel()?.setValue('');
+    });
+  }
 };
 
 export const uiGetMonacoEditor = async (
@@ -91,7 +98,7 @@ export const uiGetMonacoEditor = async (
   await expect(editor).toBeVisible({ timeout: 10000 });
 
   if (clear) {
-    await uiClearMonacoEditor(page);
+    await uiClearMonacoEditor(page, editor);
   }
 
   return editor;

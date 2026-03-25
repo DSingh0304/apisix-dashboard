@@ -23,6 +23,7 @@ import {
   useController,
   type UseControllerProps,
   useFormContext,
+  useWatch,
 } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -82,9 +83,14 @@ export const FormItemEditor = <T extends FieldValues>(
   }, [controllerProps, t, monacoErrorRef]);
 
   const {
-    field: { value, onChange: fOnChange, ...restField },
+    field: { value: controlledValue, onChange: fOnChange, ...restField },
     fieldState,
   } = useController<T>(enhancedControllerProps);
+
+  // useController returns undefined for disabled fields in react-hook-form.
+  // useWatch reads the value regardless of disabled state.
+  const watchedValue = useWatch({ name: controllerProps.name, control: controllerProps.control });
+  const value = restField.disabled ? (watchedValue as string | undefined) ?? '' : controlledValue;
 
   const [internalLoading, setLoading] = useState(false);
 

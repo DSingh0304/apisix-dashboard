@@ -32,10 +32,29 @@ export const deepCleanEmptyKeys = <T extends object>(
 
 export const produceDeepCleanEmptyKeys = (opts: ICleanerOptions = {}) =>
   produce((draft) => {
-    deepCleanEmptyKeys(draft, {
-      ...opts,
-      emptyObjectsCleaner: false,
-    });
+    deepCleanEmptyKeys(draft, opts);
+  });
+
+/**
+ * Preserves plugin entries with empty config ({}) after deep cleaning.
+ * APISIX plugins like key-auth have no required fields and are valid with {}.
+ * deepCleanEmptyKeys would strip them, so we restore them from the original.
+ */
+export const produceRestoreEmptyPlugins = (original: object) =>
+  produce((draft: Record<string, unknown>) => {
+    const orig = original as Record<string, unknown>;
+    if (orig.plugins && typeof orig.plugins === 'object') {
+      const origPlugins = orig.plugins as Record<string, unknown>;
+      const draftPlugins = (draft.plugins ?? {}) as Record<string, unknown>;
+      Object.keys(origPlugins).forEach((name) => {
+        if (!(name in draftPlugins)) {
+          draftPlugins[name] = origPlugins[name];
+        }
+      });
+      if (Object.keys(draftPlugins).length > 0) {
+        draft.plugins = draftPlugins;
+      }
+    }
   });
 
 export const rmDoubleUnderscoreKeys = (obj: object) => {
@@ -67,7 +86,8 @@ export const pipeProduce = (...funcs: ((a: any) => unknown)[]) => {
         ...fs,
         produceRmDoubleUnderscoreKeys,
         produceTime,
-        produceDeepCleanEmptyKeys()
+        produceDeepCleanEmptyKeys(),
+        produceRestoreEmptyPlugins(val as object)
       )(draft) as never;
     }) as T;
 };
