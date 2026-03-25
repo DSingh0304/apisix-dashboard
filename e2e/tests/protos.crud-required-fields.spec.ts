@@ -76,7 +76,7 @@ test.describe('CRUD proto with required fields only', () => {
       expect(createdProto).toBeDefined();
       expect(createdProto?.value.id).toBeDefined();
        
-      createdProtoId = createdProto!.value.id!;
+      createdProtoId = createdProto!.value.id;
 
       // Verify content matches
       expect(createdProto?.value.content).toBe(protoContent);

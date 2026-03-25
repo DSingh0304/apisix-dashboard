@@ -66,17 +66,17 @@ test('CRUD stream route with all fields', async ({ page }) => {
   const hostInput = firstRow.locator('input').nth(0);
   await hostInput.click();
   await hostInput.fill('127.0.0.11');
+  await hostInput.press('Tab');
 
   const portInput = firstRow.locator('input').nth(1);
   await portInput.click();
   await portInput.fill('8081');
+  await portInput.press('Tab');
 
   const weightInput = firstRow.locator('input').nth(2);
   await weightInput.click();
   await weightInput.fill('100');
-  await weightInput.blur();
-  // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(500);
+  await weightInput.press('Tab');
 
   // Submit and land on detail page
   await page.getByRole('button', { name: 'Add', exact: true }).click();
