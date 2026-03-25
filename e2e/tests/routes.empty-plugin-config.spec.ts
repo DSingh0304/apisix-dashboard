@@ -260,8 +260,12 @@ test('should preserve plugin with empty configuration (key-auth) during creation
     const pluginCard = page.getByTestId('plugin-key-auth');
     await pluginCard.getByRole('button', { name: 'View' }).click();
     const viewPluginDialog = page.getByRole('dialog', { name: 'View Plugin' });
-    const viewEditor = await uiGetMonacoEditor(page, viewPluginDialog, false);
-    const viewContent = await viewEditor.getByRole('textbox').inputValue();
-    expect(viewContent.trim()).toBe('{}');
+    await uiGetMonacoEditor(page, viewPluginDialog, false);
+    // Read Monaco editor content from the visible lines (not the textarea)
+    const viewContent = await viewPluginDialog
+      .locator('.view-lines')
+      .first()
+      .innerText();
+    expect(viewContent.replace(/\s/g, '')).toBe('{}');
   });
 });
