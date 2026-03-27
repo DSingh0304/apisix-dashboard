@@ -55,6 +55,16 @@ export const produceRestoreEmptyPlugins = (original: object) =>
         draft.plugins = draftPlugins;
       }
     }
+    // Restore discovery_args: {} if it was present in the original.
+    // APISIX accepts empty discovery_args and deepCleanEmptyKeys would strip it.
+    if (
+      'discovery_args' in orig &&
+      orig.discovery_args !== null &&
+      typeof orig.discovery_args === 'object' &&
+      Object.keys(orig.discovery_args as object).length === 0
+    ) {
+      (draft as Record<string, unknown>).discovery_args = {};
+    }
   });
 
 export const rmDoubleUnderscoreKeys = (obj: object) => {

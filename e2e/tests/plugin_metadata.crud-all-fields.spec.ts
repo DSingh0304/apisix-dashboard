@@ -56,7 +56,7 @@ const getMonacoEditorValue = async (editPluginDialog: Locator) => {
 
   if (!editorValue || editorValue.trim() === '{') {
     const allText = await editPluginDialog.textContent();
-    console.log('DEBUG: editorValue fallback failed, dialog text:', allText);
+    void allText; // fallback failed, editor value unavailable
   }
   return editorValue;
 };
@@ -64,7 +64,6 @@ const getMonacoEditorValue = async (editPluginDialog: Locator) => {
 // Helper function to close edit dialog
 const closeEditDialog = async (editPluginDialog: Locator) => {
   const buttons = await editPluginDialog.locator('button').allTextContents();
-  console.log('DEBUG: Edit Plugin dialog buttons:', buttons);
   let closed = false;
   for (const [i, name] of buttons.entries()) {
     if (name.trim().toLowerCase() === 'cancel') {
