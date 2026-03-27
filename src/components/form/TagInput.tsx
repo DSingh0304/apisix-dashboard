@@ -27,7 +27,7 @@ export type FormItemTagsInputProps<
   T extends FieldValues,
   R
 > = UseControllerProps<T> &
-  TagsInputProps & {
+  Omit<TagsInputProps, 'value' | 'onChange'> & {
     from?: (v: R) => string;
     to?: (v: string) => R;
   };
@@ -44,19 +44,33 @@ export const FormItemTagsInput = <T extends FieldValues, R>(
     field: { value, onChange: fOnChange, ...restField },
     fieldState,
   } = useController<T>(controllerProps);
+
+  // Defensive: ensure value is always an array of strings to prevent
+  // "a.trim is not a function" errors when non-string values are passed
+  const rawValue = Array.isArray(value) ? value : [];
+  const tagsInputValue = (from ? rawValue.map(from) : rawValue).filter(
+    (item: unknown): item is string => {
+      const isString = typeof item === 'string';
+      if (!isString) {
+        // eslint-disable-next-line no-console
+        console.warn('[TagInput] Filtered out non-string value:', item);
+      }
+      return isString;
+    }
+  );
+
   return (
     <TagsInput
-      value={from ? value.map(from) : value}
+      {...restField}
+      {...restProps}
+      value={tagsInputValue}
       error={fieldState.error?.message}
       onChange={(value) => {
         const val = to ? value.map(to) : value;
         fOnChange(val);
-        restProps?.onChange?.(value);
       }}
       comboboxProps={{ shadow: 'md' }}
       acceptValueOnBlur
-      {...restField}
-      {...restProps}
     />
   );
 };

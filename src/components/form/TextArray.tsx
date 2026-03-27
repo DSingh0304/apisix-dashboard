@@ -35,9 +35,14 @@ export const FormItemTextArray = <T extends FieldValues>(
     field: { value, onChange: fOnChange, ...restField },
     fieldState,
   } = useController<T>(controllerProps);
+  const rawValue = Array.isArray(value) ? value : [];
+  const tagsInputValue = rawValue.filter(
+    (item: unknown): item is string => typeof item === 'string'
+  );
+
   return (
     <TagsInput
-      value={value}
+      value={tagsInputValue}
       error={fieldState.error?.message}
       onChange={(value) => {
         fOnChange(value);
