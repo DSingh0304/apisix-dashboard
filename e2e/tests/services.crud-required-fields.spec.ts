@@ -36,19 +36,6 @@ test.beforeAll(async () => {
 });
 
 test('should CRUD service with required fields', async ({ page }) => {
-  page.on('console', (msg) => {
-    if (msg.type() === 'log' || msg.type() === 'error') {
-      console.log(`[Browser ${msg.type()}] ${msg.text()}`);
-    }
-  });
-
-  page.on('response', (response) => {
-    if (!response.ok() && response.url().includes('/apisix/admin')) {
-      console.log(`[Response Error] ${response.url()} -> ${response.status()} ${response.statusText()}`);
-      response.json().then(j => console.log('Response body:', JSON.stringify(j))).catch(() => {});
-    }
-  });
-
   await servicesPom.toIndex(page);
   await servicesPom.isIndexPage(page);
 
@@ -67,9 +54,11 @@ test('should CRUD service with required fields', async ({ page }) => {
     await addNodeBtn.click();
 
     const rows = upstreamSection.locator('tr.ant-table-row');
-    await rows.first().locator('input').first().fill('127.0.0.1');
-    await rows.first().locator('input').nth(1).fill('80');
-    await rows.first().locator('input').nth(2).fill('1');
+    const firstRowInputs = rows.first().locator('input');
+    await firstRowInputs.nth(0).fill('127.0.0.1');
+    await firstRowInputs.nth(1).fill('80');
+    await firstRowInputs.nth(2).fill('1');
+    await firstRowInputs.nth(2).blur(); // Trigger sync for Antd-Pro-Table to RHF
 
     // Ensure the name field is properly filled before submitting
     const nameField = page.getByRole('textbox', { name: 'Name' }).first();

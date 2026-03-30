@@ -53,9 +53,10 @@ const zValidateField = <T extends ZodRawShape, R extends keyof T>(
 
 const genRecord = (data?: DataSource | APISIXType['UpstreamNode']) => {
   const d = data || zGetDefault(APISIX.UpstreamNode);
+  const id = (d as DataSource).id || nanoid();
   return {
-    id: nanoid(),
     ...d,
+    id,
   } as DataSource;
 };
 
@@ -180,8 +181,9 @@ export const FormItemNodes = <T extends FieldValues>(
     },
     values: [] as DataSource[],
     setValues(data: DataSource[]) {
-      if (equals(toJS(this.values), data)) return;
+      if (equals(parseToUpstreamNodes(toJS(this.values)), parseToUpstreamNodes(data))) return;
       this.values = data;
+      this.save();
     },
     append(data: DataSource) {
       this.values.push(data);
@@ -231,7 +233,6 @@ export const FormItemNodes = <T extends FieldValues>(
             editableKeys: ob.editableKeys,
             onValuesChange(_, dataSource) {
               ob.setValues(dataSource);
-              ob.save();
             },
             actionRender: (row) => {
               return [
@@ -240,7 +241,10 @@ export const FormItemNodes = <T extends FieldValues>(
                   variant="transparent"
                   size="compact-xs"
                   px={0}
-                  onClick={() => ob.remove(row.id)}
+                  onClick={() => {
+                    ob.remove(row.id);
+                    ob.save();
+                  }}
                 >
                   {t('form.btn.delete')}
                 </Button>,

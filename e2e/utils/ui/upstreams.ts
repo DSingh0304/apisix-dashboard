@@ -54,10 +54,10 @@ export async function uiFillUpstreamRequiredFields(
   await firstRowHost.fill(upstream.nodes[1].host);
   await expect(firstRowHost).toHaveValue(upstream.nodes[1].host);
 
-  // Add second node - blur first, wait for useClickOutside state sync, then click Add
+  // Add second node - blur first to trigger sync, then click Add
   await firstRowHost.blur();
   if (page) await page.waitForTimeout(500);
-  await addNodeBtn.click();
+  await addNodeBtn.click({ force: true });
   await expect(rows).toHaveCount(2, { timeout: 10000 });
   const secondRowHost = rows.nth(1).getByRole('textbox').first();
   await secondRowHost.fill(upstream.nodes[0].host);
@@ -66,7 +66,7 @@ export async function uiFillUpstreamRequiredFields(
   // Add a third node and then remove it to test deletion functionality
   await secondRowHost.blur();
   if (page) await page.waitForTimeout(500);
-  await addNodeBtn.click();
+  await addNodeBtn.click({ force: true });
   await expect(rows).toHaveCount(3, { timeout: 10000 });
   await rows.nth(2).getByRole('button', { name: 'Delete' }).click();
   await expect(rows).toHaveCount(2);
@@ -148,8 +148,8 @@ export async function uiFillUpstreamAllFields(
 
     // Add the second node - blur any focused input first, then click Add
     await priorityInput.blur();
-    await page.waitForTimeout(500);
-    await addNodeBtn.click();
+    if (page) await page.waitForTimeout(500);
+    await addNodeBtn.click({ force: true });
     await expect(rows).toHaveCount(2, { timeout: 10000 });
 
     // Fill in the Host for the second node - click first then fill
