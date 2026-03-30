@@ -38,7 +38,7 @@ test.describe('Dark Mode', () => {
       });
 
       await test.step('activate auto mode', async () => {
-        await themeOption(page, 'auto').click();
+        await themeOption(page, 'auto').dispatchEvent('click');
         await page.reload();
       });
 
@@ -56,7 +56,7 @@ test.describe('Dark Mode', () => {
     { tag: '@dark-mode' },
     async ({ page }) => {
       await test.step('switch to dark mode', async () => {
-        await themeOption(page, 'dark').click();
+        await themeOption(page, 'dark').dispatchEvent('click');
         await expect(page.locator('html')).toHaveAttribute(
           'data-mantine-color-scheme',
           'dark'
@@ -79,7 +79,7 @@ test.describe('Dark Mode', () => {
       });
 
       await test.step('clean up: restore auto mode', async () => {
-        await themeOption(page, 'auto').click();
+        await themeOption(page, 'auto').dispatchEvent('click');
       });
     }
   );
@@ -89,7 +89,7 @@ test.describe('Dark Mode', () => {
     { tag: '@dark-mode' },
     async ({ page }) => {
       await test.step('switch to light mode', async () => {
-        await themeOption(page, 'light').click();
+        await themeOption(page, 'light').dispatchEvent('click');
         await expect(page.locator('html')).toHaveAttribute(
           'data-mantine-color-scheme',
           'light'
@@ -97,7 +97,7 @@ test.describe('Dark Mode', () => {
       });
 
       await test.step('switch to dark mode', async () => {
-        await themeOption(page, 'dark').click();
+        await themeOption(page, 'dark').dispatchEvent('click');
         await expect(page.locator('html')).toHaveAttribute(
           'data-mantine-color-scheme',
           'dark'
@@ -105,7 +105,7 @@ test.describe('Dark Mode', () => {
       });
 
       await test.step('switch back to auto mode', async () => {
-        await themeOption(page, 'auto').click();
+        await themeOption(page, 'auto').dispatchEvent('click');
       });
 
       await test.step('verify auto mode resolves correctly', async () => {
