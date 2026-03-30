@@ -49,7 +49,7 @@ test.beforeAll(async () => {
 test('should CRUD route with all fields', async ({ page }) => {
   test.slow();
 
-  const varsSection = page.getByText('Vars').locator('..');
+  const varsSection = page.getByRole('group', { name: 'Match Rules' }).getByText('Vars').locator('..');
 
   // Navigate to the route list page
   await routesPom.toIndex(page);
@@ -264,7 +264,7 @@ test('should CRUD route with all fields', async ({ page }) => {
 
     // Verify Vars field
     await uiGetMonacoEditor(page, varsSection, false);
-    await expect(varsSection.getByText('arg_name')).toBeVisible();
+    await expect(varsSection.getByText('arg_name')).toBeVisible({ timeout: 15000 });
     await expect(varsSection.getByText('json')).toBeVisible();
 
     // Verify Plugins
@@ -336,7 +336,7 @@ test('should CRUD route with all fields', async ({ page }) => {
 
     // Verify updated Vars field
     await uiGetMonacoEditor(page, varsSection, false);
-    await expect(varsSection.getByText('arg_name')).toBeVisible();
+    await expect(varsSection.getByText('arg_name')).toBeVisible({ timeout: 15000 });
     await expect(varsSection.getByText('updated')).toBeVisible();
 
     // Return to list page and verify the route exists

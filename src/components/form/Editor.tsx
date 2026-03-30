@@ -23,7 +23,6 @@ import {
   useController,
   type UseControllerProps,
   useFormContext,
-  useWatch,
 } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -58,7 +57,7 @@ export const FormItemEditor = <T extends FieldValues>(
   const { t } = useTranslation();
   const { controllerProps, restProps } = genControllerProps(props, '');
   const { customSchema, language, isLoading, ...wrapperProps } = restProps;
-  const { trigger } = useFormContext();
+  const { trigger, watch } = useFormContext();
   const monacoErrorRef = useRef<string | null>(null);
   const enhancedControllerProps = useMemo(() => {
     return {
@@ -88,9 +87,17 @@ export const FormItemEditor = <T extends FieldValues>(
   } = useController<T>(enhancedControllerProps);
 
   // useController returns undefined for disabled fields in react-hook-form.
-  // useWatch reads the value regardless of disabled state.
-  const watchedValue = useWatch({ name: controllerProps.name, control: controllerProps.control });
-  const value = restField.disabled ? (watchedValue as string | undefined) ?? '' : controlledValue;
+  // useFormContext().watch() reads from both _formValues and _defaultValues,
+  // making it reliable even when the form is disabled with shouldUnregister:true.
+  const watchedValue = watch(controllerProps.name as string);
+  // watchedValue may be a non-string (e.g. raw array) if the form store has
+  // the pre-transform value. Normalize to a JSON string for Monaco.
+  const normalizedWatchedValue = typeof watchedValue === 'string'
+    ? watchedValue
+    : watchedValue != null
+      ? JSON.stringify(watchedValue, null, 2)
+      : undefined;
+  const value = restField.disabled ? normalizedWatchedValue ?? '' : controlledValue;
 
   const [internalLoading, setLoading] = useState(false);
 

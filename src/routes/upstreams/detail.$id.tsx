@@ -84,11 +84,21 @@ const UpstreamDetailForm = (
   });
 
   const putUpstream = useMutation({
-    mutationFn: (d: APISIXType['Upstream']) =>
-      putUpstreamReq(
+    mutationFn: (d: APISIXType['Upstream']) => {
+      // Merge original discovery_args into form data before processing,
+      // so pipeProduce's produceRestoreEmptyPlugins can restore discovery_args: {}
+      // even if the field was not touched (and thus absent from d).
+      const merged = {
+        ...d,
+        ...(upstreamData.discovery_args !== undefined && !('discovery_args' in d)
+          ? { discovery_args: upstreamData.discovery_args }
+          : {}),
+      };
+      return putUpstreamReq(
         req,
-        pipeProduce(produceRmEmptyUpstreamFields)(d) as APISIXType['Upstream']
-      ),
+        pipeProduce(produceRmEmptyUpstreamFields)(merged) as APISIXType['Upstream']
+      );
+    },
     async onSuccess() {
       notifications.show({
         message: t('info.edit.success', { name: t('upstreams.singular') }),
