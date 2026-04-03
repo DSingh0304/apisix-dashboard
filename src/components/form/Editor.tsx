@@ -63,7 +63,8 @@ export const FormItemEditor = <T extends FieldValues>(
   const monacoTheme = colorScheme === 'dark' ? 'vs-dark' : 'vs-light';
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const { controllerProps, restProps } = genControllerProps(props, '');
-  const { customSchema, language, isLoading, ...wrapperProps } = restProps;
+  const { customSchema, language, isLoading, required, ...wrapperProps } =
+    restProps;
   const { trigger } = useFormContext();
   const monacoErrorRef = useRef<string | null>(null);
 
@@ -73,6 +74,9 @@ export const FormItemEditor = <T extends FieldValues>(
       rules: {
         ...controllerProps.rules,
         validate: (value: string) => {
+          if (value.trim().length === 0 && !required) {
+            return true;
+          }
           // Check JSON syntax
           try {
             JSON.parse(value);
@@ -87,7 +91,7 @@ export const FormItemEditor = <T extends FieldValues>(
         },
       },
     };
-  }, [controllerProps, t, monacoErrorRef]);
+  }, [controllerProps, required, t, monacoErrorRef]);
 
   const {
     field: { value, onChange: fOnChange, ...restField },
@@ -133,6 +137,7 @@ export const FormItemEditor = <T extends FieldValues>(
     <InputWrapper
       error={fieldState.error?.message}
       id="#editor-wrapper"
+      required={required}
       {...wrapperProps}
     >
       <input name={restField.name} type="hidden" />

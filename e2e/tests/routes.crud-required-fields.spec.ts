@@ -18,7 +18,12 @@ import { routesPom } from '@e2e/pom/routes';
 import { randomId } from '@e2e/utils/common';
 import { e2eReq } from '@e2e/utils/req';
 import { test } from '@e2e/utils/test';
-import { uiHasToastMsg } from '@e2e/utils/ui';
+import {
+  uiClearMonacoEditor,
+  uiFillMonacoEditor,
+  uiGetMonacoEditor,
+  uiHasToastMsg,
+} from '@e2e/utils/ui';
 import { uiFillUpstreamRequiredFields } from '@e2e/utils/ui/upstreams';
 import { expect } from '@playwright/test';
 
@@ -99,6 +104,8 @@ test('should CRUD route with required fields', async ({ page }) => {
   });
 
   await test.step('edit and update route in detail page', async () => {
+    const varsSection = page.getByText('Vars').locator('..');
+
     // Click the Edit button in the detail page
     await page.getByRole('button', { name: 'Edit' }).click();
 
@@ -113,6 +120,11 @@ test('should CRUD route with required fields', async ({ page }) => {
     // Update URI
     const uriField = page.getByLabel('URI', { exact: true });
     await uriField.fill(`${routeUri}-updated`);
+
+    // Vars is optional and should remain valid when user clears it
+    const varsEditor = await uiGetMonacoEditor(page, varsSection);
+    await uiFillMonacoEditor(page, varsEditor, '[["arg_name", "==", "tmp"]]');
+    await uiClearMonacoEditor(page);
 
     // Click the Save button to save changes
     const saveBtn = page.getByRole('button', { name: 'Save' });
