@@ -56,11 +56,9 @@ export const FormItemEditor = <T extends FieldValues>(
 ) => {
   const { t } = useTranslation();
   const { controllerProps, restProps } = genControllerProps(props, '');
-  const { customSchema, language, isLoading, ...wrapperProps } = restProps;
-  const { trigger, watch } = useFormContext();
   const { customSchema, language, isLoading, required, ...wrapperProps } =
     restProps;
-  const { trigger } = useFormContext();
+  const { trigger, watch } = useFormContext();
   const monacoErrorRef = useRef<string | null>(null);
   const enhancedControllerProps = useMemo(() => {
     return {
