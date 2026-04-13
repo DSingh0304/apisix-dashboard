@@ -129,7 +129,6 @@ test('should CRUD stream route under service', async ({ page }) => {
     const saveBtn = page.getByRole('button', { name: 'Save' });
     await saveBtn.click();
 
-    // Verify the update was successful
     await uiHasToastMsg(page, {
       hasText: 'success',
     });

@@ -23,7 +23,7 @@ import {
   useNavigate,
   useParams,
 } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useBoolean } from 'react-use';
@@ -62,6 +62,16 @@ const RouteDetailForm = (props: Props) => {
   const routeQuery = useQuery(getRouteQueryOptions(id));
   const { data: routeData, isLoading, refetch } = routeQuery;
 
+  const formDefaults = useMemo(() => {
+    if (routeData?.value) {
+      const upstreamProduced = produceToUpstreamForm(
+        routeData.value.upstream || {},
+        routeData.value
+      );
+      return produceVarsToForm(upstreamProduced);
+    }
+  }, [routeData]);
+
   const form = useForm({
     resolver: zodResolver(RoutePutSchema),
     shouldUnregister: true,
@@ -71,14 +81,10 @@ const RouteDetailForm = (props: Props) => {
   });
 
   useEffect(() => {
-    if (routeData?.value && !isLoading) {
-      const upstreamProduced = produceToUpstreamForm(
-        routeData.value.upstream || {},
-        routeData.value
-      );
-      form.reset(produceVarsToForm(upstreamProduced));
+    if (formDefaults && !isLoading) {
+      form.reset(formDefaults);
     }
-  }, [routeData, form, isLoading]);
+  }, [formDefaults, form, isLoading]);
 
   const putRoute = useMutation({
     mutationFn: (d: RoutePutType) =>

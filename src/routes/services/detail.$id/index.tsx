@@ -32,6 +32,7 @@ import { getServiceQueryOptions } from '@/apis/hooks';
 import { putServiceReq } from '@/apis/services';
 import { FormSubmitBtn } from '@/components/form/Btn';
 import { FormPartService } from '@/components/form-slice/FormPartService';
+import { produceRmEmptyUpstreamFields } from '@/components/form-slice/FormPartUpstream/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import { FormSectionGeneral } from '@/components/form-slice/FormSectionGeneral';
 import { DeleteResourceBtn } from '@/components/page/DeleteResourceBtn';
@@ -73,7 +74,7 @@ const ServiceDetailForm = (props: Props) => {
     mutationFn: (d: APISIXType['Service']) =>
       putServiceReq(
         req,
-        pipeProduce(produceRmUpstreamWhenHas('upstream_id'))(d)
+        pipeProduce(produceRmUpstreamWhenHas('upstream_id'), produceRmEmptyUpstreamFields)(d)
       ),
     async onSuccess() {
       notifications.show({

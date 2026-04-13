@@ -57,6 +57,9 @@ test('should CRUD service with required fields', async ({ page }) => {
     await rows.first().locator('input').first().fill('127.0.0.1');
     await rows.first().locator('input').nth(1).fill('80');
     await rows.first().locator('input').nth(2).fill('1');
+    await rows.first().locator('input').nth(2).blur();
+    // eslint-disable-next-line playwright/no-wait-for-timeout
+    await page.waitForTimeout(500);
 
     // Ensure the name field is properly filled before submitting
     const nameField = page.getByRole('textbox', { name: 'Name' }).first();
