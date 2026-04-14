@@ -77,10 +77,9 @@ const ServiceDetailForm = (props: Props) => {
       putServiceReq(
         req,
         pipeProduce(
-          produceRmEmptyUpstreamFields,
-          produceRmUpstreamWhenHas('upstream_id')
+          produceRmUpstreamWhenHas('upstream_id'),
+          produceRmEmptyUpstreamFields
         )(d) as APISIXType['Service']
-        pipeProduce(produceRmUpstreamWhenHas('upstream_id'), produceRmEmptyUpstreamFields)(d)
       ),
     async onSuccess() {
       notifications.show({

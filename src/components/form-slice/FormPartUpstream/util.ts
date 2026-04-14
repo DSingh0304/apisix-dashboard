@@ -31,34 +31,6 @@ export const produceToUpstreamForm = (
     d.__checksPassiveEnabled =
       !!upstream.checks?.passive && isNotEmpty(upstream.checks.passive);
   });
-const isFieldEmpty = (v: unknown) =>
-  v === undefined || v === null || v === '' || Number.isNaN(v);
-
-const removeEmptyInplace = (obj: Record<string, unknown>) => {
-  for (const key in obj) {
-    const value = obj[key];
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      removeEmptyInplace(value as Record<string, unknown>);
-      if (Object.keys(value as Record<string, unknown>).length === 0) {
-        delete obj[key];
-      }
-    } else if (isFieldEmpty(value)) {
-      delete obj[key];
-    }
-  }
-};
-
-export const produceRmEmptyUpstreamFields = produce((draft: Record<string, unknown>) => {
-  const fields = ['timeout', 'keepalive_pool', 'tls', 'checks', 'upstream'];
-  for (const field of fields) {
-    if (draft[field] && typeof draft[field] === 'object' && !Array.isArray(draft[field])) {
-      removeEmptyInplace(draft[field] as Record<string, unknown>);
-      if (Object.keys(draft[field] as Record<string, unknown>).length === 0) {
-        delete draft[field];
-      }
-    }
-  }
-});
 export const produceToNestedUpstreamForm = produce((draft: Record<string, unknown>) => {
   const d = draft as Record<string, unknown> & { 
     upstream?: Record<string, unknown>;

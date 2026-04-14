@@ -67,7 +67,6 @@ const RouteDetailForm = (props: Props) => {
   const routeQuery = useSuspenseQuery(getRouteQueryOptions(id));
   const { data: routeData, refetch } = routeQuery;
 
-  // Compute initial form values from route data
   const formDefaults = useMemo(
     () =>
       produceVarsToForm(
@@ -75,16 +74,6 @@ const RouteDetailForm = (props: Props) => {
       ),
     [routeData.value]
   );
-
-  const formDefaults = useMemo(() => {
-    if (routeData?.value) {
-      const upstreamProduced = produceToUpstreamForm(
-        routeData.value.upstream || {},
-        routeData.value
-      );
-      return produceVarsToForm(upstreamProduced);
-    }
-  }, [routeData]);
 
   const form = useForm({
     resolver: zodResolver(RoutePutSchema),
