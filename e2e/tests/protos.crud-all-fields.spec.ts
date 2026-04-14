@@ -75,9 +75,9 @@ test.describe('CRUD proto with all fields', () => {
         p.value.content?.includes('package test;')
       );
       expect(createdProto).toBeDefined();
-      expect(createdProto!.value.id).toBeDefined();
-
-      createdProtoId = createdProto!.value.id as string;
+      expect(createdProto?.value.id).toBeDefined();
+       
+      createdProtoId = createdProto!.value.id;
 
       // Verify content matches
       expect(createdProto!.value.content).toBe(protoContent);

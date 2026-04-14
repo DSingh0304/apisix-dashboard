@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { clean,type ICleanerOptions } from 'fast-clean';
+import { clean, type ICleanerOptions } from 'fast-clean';
 import { produce } from 'immer';
 import { pipe } from 'rambdax';
 
@@ -33,6 +33,38 @@ export const deepCleanEmptyKeys = <T extends object>(
 export const produceDeepCleanEmptyKeys = (opts: ICleanerOptions = {}) =>
   produce((draft) => {
     deepCleanEmptyKeys(draft, opts);
+  });
+
+/**
+ * Preserves plugin entries with empty config ({}) after deep cleaning.
+ * APISIX plugins like key-auth have no required fields and are valid with {}.
+ * deepCleanEmptyKeys would strip them, so we restore them from the original.
+ */
+export const produceRestoreEmptyPlugins = (original: object) =>
+  produce((draft: Record<string, unknown>) => {
+    const orig = original as Record<string, unknown>;
+    if (orig.plugins && typeof orig.plugins === 'object') {
+      const origPlugins = orig.plugins as Record<string, unknown>;
+      const draftPlugins = (draft.plugins ?? {}) as Record<string, unknown>;
+      Object.keys(origPlugins).forEach((name) => {
+        if (!(name in draftPlugins)) {
+          draftPlugins[name] = origPlugins[name];
+        }
+      });
+      if (Object.keys(draftPlugins).length > 0) {
+        draft.plugins = draftPlugins;
+      }
+    }
+    // Restore discovery_args: {} if it was present in the original.
+    // APISIX accepts empty discovery_args and deepCleanEmptyKeys would strip it.
+    if (
+      'discovery_args' in orig &&
+      orig.discovery_args !== null &&
+      typeof orig.discovery_args === 'object' &&
+      Object.keys(orig.discovery_args as object).length === 0
+    ) {
+      (draft as Record<string, unknown>).discovery_args = {};
+    }
   });
 
 export const rmDoubleUnderscoreKeys = (obj: object) => {
@@ -64,7 +96,8 @@ export const pipeProduce = (...funcs: ((a: any) => unknown)[]) => {
         ...fs,
         produceRmDoubleUnderscoreKeys,
         produceTime,
-        produceDeepCleanEmptyKeys()
+        produceDeepCleanEmptyKeys(),
+        produceRestoreEmptyPlugins(val as object)
       )(draft) as never;
     }) as T;
 };

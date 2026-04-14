@@ -41,7 +41,15 @@ export const uiHasToastMsg = async (
 ) => {
   const alertMsg = page.getByRole('alert').filter(...filterOpts);
   // Increased timeout for CI environment (30s instead of default 5s)
-  await expect(alertMsg).toBeVisible({ timeout: 30000 });
+  try {
+    await expect(alertMsg).toBeVisible({ timeout: 25000 });
+  } catch (e) {
+    const alerts = await page.getByRole('alert').all();
+    const texts = await Promise.all(alerts.map((a) => a.textContent()));
+    console.error(`Failed to find toast with filter options: ${JSON.stringify(filterOpts)}`);
+    console.error(`Currently visible alerts: ${JSON.stringify(texts)}`);
+    throw e;
+  }
   await alertMsg.getByRole('button').click();
   await expect(alertMsg).not.toBeVisible();
 };
@@ -64,11 +72,18 @@ export async function uiFillHTTPStatuses(
   }
 }
 
-export const uiClearMonacoEditor = async (page: Page) => {
-  await page.evaluate(() => {
-    const editor = window.__monacoEditor__;
-    editor.getModel()?.setValue('');
-  });
+export const uiClearMonacoEditor = async (page: Page, editor?: Locator) => {
+  if (editor) {
+    // Use the specific editor element to find its Monaco instance
+    await editor.click();
+    await page.keyboard.press('Control+A');
+    await page.keyboard.press('Delete');
+  } else {
+    await page.evaluate(() => {
+      const ed = window.__monacoEditor__;
+      ed.getModel()?.setValue('');
+    });
+  }
 };
 
 export const uiGetMonacoEditor = async (
@@ -83,7 +98,7 @@ export const uiGetMonacoEditor = async (
   await expect(editor).toBeVisible({ timeout: 10000 });
 
   if (clear) {
-    await uiClearMonacoEditor(page);
+    await uiClearMonacoEditor(page, editor);
   }
 
   return editor;

@@ -26,6 +26,7 @@ import { postUpstreamReq } from '@/apis/upstreams';
 import { FormSubmitBtn } from '@/components/form/Btn';
 import { FormPartUpstream } from '@/components/form-slice/FormPartUpstream';
 import { FormPartUpstreamSchema } from '@/components/form-slice/FormPartUpstream/schema';
+import { produceRmEmptyUpstreamFields } from '@/components/form-slice/FormPartUpstream/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import PageHeader from '@/components/page/PageHeader';
 import { req } from '@/config/req';
@@ -41,7 +42,7 @@ const UpstreamAddForm = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const postUpstream = useMutation({
-    mutationFn: (d: PostUpstreamType) => postUpstreamReq(req, d),
+    mutationFn: (d: PostUpstreamType) => postUpstreamReq(req, pipeProduce(produceRmEmptyUpstreamFields)(d) as PostUpstreamType),
     async onSuccess(data) {
       notifications.show({
         message: t('info.add.success', { name: t('upstreams.singular') }),
@@ -61,11 +62,7 @@ const UpstreamAddForm = () => {
 
   return (
     <FormProvider {...form}>
-      <form
-        onSubmit={form.handleSubmit((d) =>
-          postUpstream.mutateAsync(pipeProduce()(d))
-        )}
-      >
+      <form onSubmit={form.handleSubmit((d) => postUpstream.mutateAsync(d as PostUpstreamType))}>
         <FormPartUpstream />
         <FormSubmitBtn>{t('form.btn.add')}</FormSubmitBtn>
       </form>

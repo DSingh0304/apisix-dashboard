@@ -49,7 +49,7 @@ test.beforeAll(async () => {
 test('should CRUD route with all fields', async ({ page }) => {
   test.slow();
 
-  const varsSection = page.getByText('Vars').locator('..');
+  const varsSection = page.getByRole('group', { name: 'Match Rules' }).getByText('Vars').locator('..');
 
   // Navigate to the route list page
   await routesPom.toIndex(page);
@@ -172,7 +172,8 @@ test('should CRUD route with all fields', async ({ page }) => {
     ).toBeVisible();
 
     // clear the editor, will show JSON format is not valid
-    await uiClearMonacoEditor(page);
+    const realIpEditor = addPluginDialog.locator('.monaco-editor').first();
+    await uiClearMonacoEditor(page, realIpEditor);
     await expect(
       addPluginDialog.getByText('JSON format is not valid')
     ).toBeVisible();
@@ -262,7 +263,8 @@ test('should CRUD route with all fields', async ({ page }) => {
     await expect(status).toHaveValue('Disabled');
 
     // Verify Vars field
-    await expect(varsSection.getByText('arg_name')).toBeVisible();
+    await uiGetMonacoEditor(page, varsSection, false);
+    await expect(varsSection.getByText('arg_name')).toBeVisible({ timeout: 15000 });
     await expect(varsSection.getByText('json')).toBeVisible();
 
     // Verify Plugins
@@ -333,7 +335,8 @@ test('should CRUD route with all fields', async ({ page }) => {
     ).toHaveValue('200');
 
     // Verify updated Vars field
-    await expect(varsSection.getByText('arg_name')).toBeVisible();
+    await uiGetMonacoEditor(page, varsSection, false);
+    await expect(varsSection.getByText('arg_name')).toBeVisible({ timeout: 15000 });
     await expect(varsSection.getByText('updated')).toBeVisible();
 
     // Return to list page and verify the route exists

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Group,Skeleton } from '@mantine/core';
+import { Button, Group, Skeleton } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
   queryOptions,
@@ -27,7 +27,7 @@ import {
   useNavigate,
   useParams,
 } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useBoolean } from 'react-use';
@@ -36,7 +36,10 @@ import { getUpstreamReq, putUpstreamReq } from '@/apis/upstreams';
 import { FormSubmitBtn } from '@/components/form/Btn';
 import { FormPartUpstream } from '@/components/form-slice/FormPartUpstream';
 import { FormPartUpstreamSchema } from '@/components/form-slice/FormPartUpstream/schema';
-import { produceToUpstreamForm } from '@/components/form-slice/FormPartUpstream/util';
+import {
+  produceRmEmptyUpstreamFields,
+  produceToUpstreamForm,
+} from '@/components/form-slice/FormPartUpstream/util';
 import { FormTOCBox } from '@/components/form-slice/FormSection';
 import { FormSectionGeneral } from '@/components/form-slice/FormSectionGeneral';
 import { DeleteResourceBtn } from '@/components/page/DeleteResourceBtn';
@@ -68,6 +71,11 @@ const UpstreamDetailForm = (
     refetch,
   } = useSuspenseQuery(getUpstreamQueryOptions(id));
 
+  const formDefaults = useMemo(
+    () => produceToUpstreamForm(upstreamData),
+    [upstreamData]
+  );
+
   const form = useForm({
     resolver: zodResolver(FormPartUpstreamSchema),
     shouldUnregister: true,
@@ -76,7 +84,21 @@ const UpstreamDetailForm = (
   });
 
   const putUpstream = useMutation({
-    mutationFn: (d: APISIXType['Upstream']) => putUpstreamReq(req, d),
+    mutationFn: (d: APISIXType['Upstream']) => {
+      // Merge original discovery_args into form data before processing,
+      // so pipeProduce's produceRestoreEmptyPlugins can restore discovery_args: {}
+      // even if the field was not touched (and thus absent from d).
+      const merged = {
+        ...d,
+        ...(upstreamData.discovery_args !== undefined && !('discovery_args' in d)
+          ? { discovery_args: upstreamData.discovery_args }
+          : {}),
+      };
+      return putUpstreamReq(
+        req,
+        pipeProduce(produceRmEmptyUpstreamFields)(merged) as APISIXType['Upstream']
+      );
+    },
     async onSuccess() {
       notifications.show({
         message: t('info.edit.success', { name: t('upstreams.singular') }),
@@ -89,9 +111,9 @@ const UpstreamDetailForm = (
 
   useEffect(() => {
     if (upstreamData && !isLoading) {
-      form.reset(produceToUpstreamForm(upstreamData));
+      form.reset(formDefaults);
     }
-  }, [upstreamData, form, isLoading]);
+  }, [formDefaults, form, isLoading, upstreamData]);
 
   if (isLoading) {
     return <Skeleton height={400} />;
@@ -102,7 +124,7 @@ const UpstreamDetailForm = (
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit((d) => {
-            putUpstream.mutateAsync(pipeProduce()(d));
+            putUpstream.mutateAsync(d as APISIXType['Upstream']);
           })}
         >
           <FormSectionGeneral readOnly />
