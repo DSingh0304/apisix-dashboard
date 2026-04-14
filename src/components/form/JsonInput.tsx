@@ -70,6 +70,7 @@ export const FormItemJsonInput = <T extends FieldValues>(
       formatOnBlur
       autosize
       resize="vertical"
+      validationError={null}
       {...restField}
       {...omit(['objValue'], restProps)}
     />

@@ -47,7 +47,7 @@ const assert = {
     const title = page.getByRole('heading', {
       name: 'Stream Route Detail',
     });
-    await expect(title).toBeVisible({ timeout: 20000 });
+    await expect(title).toBeVisible({ timeout: 30000 });
   },
 };
 

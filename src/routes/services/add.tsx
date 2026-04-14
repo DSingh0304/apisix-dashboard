@@ -40,10 +40,7 @@ const ServiceAddForm = () => {
     mutationFn: (d: ServicePostType) =>
       postServiceReq(
         req,
-        pipeProduce(
-          produceRmEmptyUpstreamFields,
-          produceRmUpstreamWhenHas('upstream_id')
-        )(d) as ServicePostType
+        pipeProduce(produceRmUpstreamWhenHas('upstream_id'), produceRmEmptyUpstreamFields)(d) as ServicePostType
       ),
     async onSuccess(res) {
       notifications.show({
@@ -66,7 +63,7 @@ const ServiceAddForm = () => {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit((d) => postService.mutateAsync(d))}>
+      <form onSubmit={form.handleSubmit((d) => postService.mutateAsync(d as ServicePostType))}>
         <FormPartService />
         <FormSubmitBtn>{t('form.btn.add')}</FormSubmitBtn>
       </form>

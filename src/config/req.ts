@@ -79,9 +79,10 @@ req.interceptors.response.use(
       if (matchSkipInterceptor(err)) return Promise.reject(err);
       const res = err.response as AxiosResponse<APISIXRespErr>;
       const d = res.data;
+      const message = d?.error_msg || d?.message || `Error status: ${res.status}`;
       notifications.show({
-        id: d?.error_msg || d?.message,
-        message: d?.error_msg || d?.message,
+        id: message,
+        message,
         color: 'red',
       });
       // Requires to enter admin key at 401

@@ -80,6 +80,7 @@ export const PluginEditorDrawer = (props: PluginEditorDrawerProps) => {
             customSchema={schema}
             isLoading={!schema}
             required
+            disabled={mode === 'view'}
           />
         </form>
 

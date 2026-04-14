@@ -76,6 +76,16 @@ const RouteDetailForm = (props: Props) => {
     [routeData.value]
   );
 
+  const formDefaults = useMemo(() => {
+    if (routeData?.value) {
+      const upstreamProduced = produceToUpstreamForm(
+        routeData.value.upstream || {},
+        routeData.value
+      );
+      return produceVarsToForm(upstreamProduced);
+    }
+  }, [routeData]);
+
   const form = useForm({
     resolver: zodResolver(RoutePutSchema),
     shouldUnregister: true,

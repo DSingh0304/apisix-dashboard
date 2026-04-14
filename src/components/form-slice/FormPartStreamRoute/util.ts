@@ -15,27 +15,28 @@
  * limitations under the License.
  */
 import { produce } from 'immer';
+import { pipe } from 'rambdax';
 
 import { produceRmEmptyUpstreamFields } from '@/components/form-slice/FormPartUpstream/util';
 import { produceRmUpstreamWhenHas } from '@/utils/form-producer';
-import { pipeProduce } from '@/utils/producer';
 
-import type { RoutePostType, RoutePutType } from './schema';
+import type { StreamRoutePostType } from './schema';
 
-export const produceVarsToForm = produce((draft: RoutePostType) => {
-  if (draft.vars && Array.isArray(draft.vars)) {
-    draft.vars = JSON.stringify(draft.vars);
-  }
-}) as (draft: RoutePostType) => RoutePutType;
+export const produceStreamRoute = (val: StreamRoutePostType) =>
+  pipe(
+    produceRmEmptyUpstreamFields,
+    (produceRmUpstreamWhenHas('service_id', 'upstream_id') as unknown as (
+      d: StreamRoutePostType
+    ) => StreamRoutePostType),
+    produce((draft: StreamRoutePostType) => {
+      // Stream Routes do not support name and status
+      const d = draft as StreamRoutePostType & { name?: string; status?: number };
+      delete d.name;
+      delete d.status;
 
-export const produceVarsToAPI = produce((draft: RoutePostType) => {
-  if (draft.vars && typeof draft.vars === 'string') {
-    (draft as RoutePostType & { vars: unknown }).vars = JSON.parse(draft.vars);
-  }
-}) as (draft: RoutePostType) => Omit<RoutePostType, 'vars'> & { vars?: unknown[] };
-
-export const produceRoute = pipeProduce(
-  produceRmUpstreamWhenHas('service_id', 'upstream_id'),
-  produceRmEmptyUpstreamFields,
-  produceVarsToAPI
-);
+      // Cleanup protocol if name is missing
+      if (draft.protocol && !draft.protocol.name) {
+        delete draft.protocol;
+      }
+    })
+  )(val);
