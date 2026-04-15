@@ -235,7 +235,7 @@ describe('SchemaField — label formatting', () => {
     it('formats snake_case field names into Title Case labels', () => {
         renderField({ type: 'string' }, 'oauth_client_id');
         // formatLabel('oauth_client_id') renders uppercase acronyms
-        expect(screen.getByText('OAUTH Client ID')).toBeInTheDocument();
+        expect(screen.getByText('OAuth Client ID')).toBeInTheDocument();
     });
 });
 

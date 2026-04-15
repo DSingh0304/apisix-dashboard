@@ -24,6 +24,7 @@ import IconTrash from '~icons/material-symbols/delete-outline';
 
 import { SchemaField } from './SchemaField';
 import type { JSONSchema7 } from './types';
+import { formatLabel } from './utils';
 
 export type ArrayFieldProps = {
     name: string;
@@ -71,14 +72,6 @@ export const ArrayField = ({ name, schema, control }: ArrayFieldProps) => {
 
     const handleAdd = () => {
         append(getDefaultItem());
-    };
-
-    const formatLabel = (fieldName: string): string => {
-        const name = fieldName.split('.').pop() || fieldName;
-        return name
-            .split('_')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
     };
 
     return (

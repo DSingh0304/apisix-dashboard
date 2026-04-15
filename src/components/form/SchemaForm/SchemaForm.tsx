@@ -65,7 +65,7 @@ export const SchemaForm = ({ schema, basePath = '' }: SchemaFormProps) => {
     const renderOneOf = () => {
         if (!schema.oneOf) return null;
 
-        return <OneOfFields schema={schema} basePath={basePath} />;
+        return <VariantFields variants={schema.oneOf as JSONSchema7[]} basePath={basePath} />;
     };
 
     // Handle dependencies - conditional fields
@@ -85,7 +85,7 @@ export const SchemaForm = ({ schema, basePath = '' }: SchemaFormProps) => {
     // Handle anyOf - same intent as oneOf in APISIX schemas: pick one branch
     const renderAnyOf = () => {
         if (!schema.anyOf) return null;
-        return <AnyOfFields schema={schema} basePath={basePath} />;
+        return <VariantFields variants={schema.anyOf as JSONSchema7[]} basePath={basePath} />;
     };
 
     // Handle if/then/else - evaluate condition on live form data
@@ -129,19 +129,19 @@ function collectAllPaths(schema: JSONSchema7, prefix = ''): string[] {
 }
 
 /**
- * OneOfFields - Renders conditional field groups based on a discriminator field
+ * VariantFields - Renders conditional field groups based on a discriminator field
  */
-const OneOfFields = ({
-    schema,
+const VariantFields = ({
+    variants,
     basePath,
 }: {
-    schema: JSONSchema7;
+    variants: JSONSchema7[];
     basePath: string;
 }) => {
     const { control, unregister } = useFormContext();
 
-    // Find the discriminator field (the const property in oneOf branches)
-    const discriminators = findDiscriminators(schema.oneOf!);
+    // Find the discriminator field (the const property in branches)
+    const discriminators = findDiscriminators(variants);
     const firstDiscriminator = discriminators[0];
 
     // Watch the discriminator field value
@@ -153,7 +153,7 @@ const OneOfFields = ({
     // Collect ALL field names from ALL branches (excluding the discriminator)
     const allBranchFields = useMemo(
         () =>
-            schema.oneOf!.flatMap((branch) => {
+            variants.flatMap((branch) => {
                 const b = branch as JSONSchema7;
                 const filtered: JSONSchema7 = {
                     properties: Object.fromEntries(
@@ -164,13 +164,13 @@ const OneOfFields = ({
                 };
                 return collectAllPaths(filtered);
             }),
-        [schema.oneOf, firstDiscriminator]
+        [variants, firstDiscriminator]
     );
 
     // When discriminator changes, unregister fields from ALL other branches
     // so they don't pollute the submit payload.
     useEffect(() => {
-        const activeBranch = schema.oneOf?.find((branch) => {
+        const activeBranch = variants.find((branch) => {
             const branchSchema = branch as JSONSchema7;
             const constValue =
                 branchSchema.properties?.[firstDiscriminator] as JSONSchema7;
@@ -196,12 +196,12 @@ const OneOfFields = ({
         allBranchFields,
         basePath,
         firstDiscriminator,
-        schema.oneOf,
+        variants,
         unregister,
     ]);
 
-    // Find matching oneOf branch
-    const matchingBranch = schema.oneOf?.find((branch) => {
+    // Find matching branch
+    const matchingBranch = variants.find((branch) => {
         const branchSchema = branch as JSONSchema7;
         const constValue =
             branchSchema.properties?.[firstDiscriminator] as JSONSchema7;
@@ -310,105 +310,6 @@ const DependencyFields = ({
     return null;
 };
 
-/**
- * AnyOfFields - Renders conditional field groups for anyOf schemas.
- */
-const AnyOfFields = ({
-    schema,
-    basePath,
-}: {
-    schema: JSONSchema7;
-    basePath: string;
-}) => {
-    const { control, unregister } = useFormContext();
-
-    const discriminators = findDiscriminators(schema.anyOf!);
-    const firstDiscriminator = discriminators[0];
-
-    const discriminatorPath = basePath
-        ? `${basePath}.${firstDiscriminator}`
-        : firstDiscriminator;
-    const watchedValue = useWatch({ control, name: discriminatorPath });
-
-    // Collect ALL field names from ALL branches
-    const allBranchFields = useMemo(
-        () =>
-            schema.anyOf!.flatMap((branch) => {
-                const b = branch as JSONSchema7;
-                const filtered: JSONSchema7 = {
-                    properties: Object.fromEntries(
-                        Object.entries(b.properties ?? {}).filter(
-                            ([k]) => k !== firstDiscriminator
-                        )
-                    ),
-                };
-                return collectAllPaths(filtered);
-            }),
-        [schema.anyOf, firstDiscriminator]
-    );
-
-    useEffect(() => {
-        const activeBranch = schema.anyOf?.find((branch) => {
-            const branchSchema = branch as JSONSchema7;
-            const constValue =
-                branchSchema.properties?.[firstDiscriminator] as JSONSchema7;
-            return constValue?.const === watchedValue;
-        }) as JSONSchema7 | undefined;
-
-        const activeProps = Object.keys(activeBranch?.properties ?? {}).filter(
-            (k) => k !== firstDiscriminator
-        );
-
-        const toUnregister = allBranchFields.filter(
-            (f) => !activeProps.includes(f)
-        );
-
-        if (toUnregister.length > 0) {
-            const paths = toUnregister.map((f) =>
-                basePath ? `${basePath}.${f}` : f
-            );
-            unregister(paths as Parameters<typeof unregister>[0]);
-        }
-    }, [
-        watchedValue,
-        allBranchFields,
-        basePath,
-        firstDiscriminator,
-        schema.anyOf,
-        unregister,
-    ]);
-
-    const matchingBranch = schema.anyOf?.find((branch) => {
-        const branchSchema = branch as JSONSchema7;
-        const constValue =
-            branchSchema.properties?.[firstDiscriminator] as JSONSchema7;
-        return constValue?.const === watchedValue;
-    }) as JSONSchema7 | undefined;
-
-    if (!matchingBranch?.properties) return null;
-
-    return (
-        <>
-            {Object.entries(matchingBranch.properties)
-                .filter(([key]) => key !== firstDiscriminator)
-                .map(([key, propSchema]) => {
-                    const fieldPath = basePath ? `${basePath}.${key}` : key;
-                    const isRequired =
-                        matchingBranch.required?.includes(key) ?? false;
-
-                    return (
-                        <SchemaField
-                            key={fieldPath}
-                            name={fieldPath}
-                            schema={propSchema as JSONSchema7}
-                            control={control}
-                            required={isRequired}
-                        />
-                    );
-                })}
-        </>
-    );
-};
 
 /**
  * IfThenElseFields - Renders fields conditionally using JSON Schema Draft 7
